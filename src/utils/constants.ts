@@ -24,6 +24,6 @@ export const EXPECTED_PCRS_DEBUG = {
 export const NOTARIZATION_BUFFER_TIME = 5000;
 
 export const DEFAULT_CONFIG_ENDPOINT =
-  'https://eternis-extension-providers.s3.amazonaws.com/default-config-2.json';
+  'https://eternis-extension-providers.s3.amazonaws.com/default-config-73690c4405adceb15942d1aa9452b4231ea3771c.json';
 
 export const CONFIG_CACHE_AGE = 600; // 10 minutes

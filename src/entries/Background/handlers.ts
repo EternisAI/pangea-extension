@@ -113,6 +113,23 @@ export const handleNotarization = (
     const req = cache.get<RequestLog>(requestId);
     if (!req) return;
 
+    const bookmarkManager = new BookmarkManager();
+    const bookmark = await bookmarkManager.findBookmark(url, method, type);
+    if (!bookmark || !bookmark.toNotarize) {
+      return;
+    }
+
+    //prevent spamming of requests
+    const lastNotaryRequest = await getLastNotaryRequest();
+    console.log('lastNotaryRequest', lastNotaryRequest);
+
+    if (lastNotaryRequest) {
+      const timeDiff = Date.now() - lastNotaryRequest.timestamp;
+      if (timeDiff < NOTARIZATION_BUFFER_TIME) {
+        return;
+      }
+    }
+
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
     const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
@@ -184,6 +201,18 @@ export const handleNotarization = (
     const notaryUrl = await get(NOTARY_API_LS_KEY, NOTARY_API);
     const websocketProxyUrl = await get(PROXY_API_LS_KEY, NOTARY_PROXY);
 
+    // Convert body to JSON if content-type is application/json
+    let parsedBody = req.requestBody;
+    if (
+      headers['Content-Type']?.toLowerCase().includes('application/json') &&
+      req.requestBody
+    ) {
+      try {
+        parsedBody = JSON.parse(req.requestBody);
+      } catch (error) {
+        console.error('Failed to parse JSON body:', error);
+      }
+    }
     await handleProveRequestStart(
       {
         type: BackgroundActiontype.prove_request_start,
@@ -193,7 +222,7 @@ export const handleNotarization = (
           url: req.url,
           method: req.method,
           headers: headers,
-          body: req.requestBody,
+          body: parsedBody,
           maxTranscriptSize: 16384,
           secretHeaders: [],
           secretResps: [],

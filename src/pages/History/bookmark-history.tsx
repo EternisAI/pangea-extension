@@ -54,7 +54,14 @@ export default function BookmarkHistory(): ReactElement {
     fetchBookmarks();
   }, [id]);
 
-  const history = useHistoryOrder(undefined, bookmark?.url);
+  const history = useHistoryOrder(
+    undefined,
+    undefined,
+    bookmark?.urlRegex?.toString(),
+  );
+  console.log('history', history);
+
+  console.log('history2', history);
 
   const allHistory = useAllRequestHistory();
   const clearHistory = useCallback(async () => {
@@ -84,7 +91,7 @@ export default function BookmarkHistory(): ReactElement {
 
         <div className="text-sm mb-2 leading-5">{bookmark.description}</div>
 
-        {!showDate && (
+        {
           <div
             onClick={async () => {
               await bookmarkManager.updateBookmark({
@@ -97,7 +104,7 @@ export default function BookmarkHistory(): ReactElement {
           >
             Generate new attestation
           </div>
-        )}
+        }
 
         {!showDate && (
           <div className="text-sm font-bold mb-2 leading-5">

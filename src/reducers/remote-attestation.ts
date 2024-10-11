@@ -4,6 +4,7 @@ import { NOTARY_API } from '../utils/constants';
 import { RemoteAttestation, generateNonce } from '@eternis/tlsn-js';
 import { OffscreenActionTypes } from '../entries/Offscreen/types';
 import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
+import { getNotaryConfig } from '../utils/misc';
 
 export const useRemoteAttestation = () => {
   const [remoteAttestation, setRemoteAttestation] =
@@ -15,13 +16,8 @@ export const useRemoteAttestation = () => {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(DEFAULT_CONFIG_ENDPOINT, {
-        headers: {
-          'Cache-Control': `max-age=${CONFIG_CACHE_AGE}`,
-        },
-      });
-      const config = await res.json();
-      console.log('config', config);
+      const config = await getNotaryConfig();
+
       setExpectedPcrs(config.EXPECTED_PCRS);
     })();
   }, []);

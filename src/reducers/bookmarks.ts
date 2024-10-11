@@ -1,14 +1,14 @@
 import { db } from '../entries/Background/db';
 import { RequestHistory, RequestLog } from '../entries/Background/rpc';
-import { sha256 } from '../utils/misc';
+import { sha256, getNotaryConfig } from '../utils/misc';
 import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
 import { getCacheByTabId } from '../entries/Background/cache';
 export type Bookmark = {
   id?: string;
+  host?: string;
   default?: boolean;
   requestId?: string;
-  url: string;
-  urlRegex: RegExp;
+  urlRegex: string;
   targetUrl: string;
   method: string;
   type: string;
@@ -82,16 +82,52 @@ export class BookmarkManager {
   }
 
   async getDefaultProviders(): Promise<Bookmark[]> {
-    const res = await fetch(DEFAULT_CONFIG_ENDPOINT, {
-      headers: {
-        'Cache-Control': `max-age=${CONFIG_CACHE_AGE}`,
-      },
-    });
-    const config = await res.json();
+    const config = await getNotaryConfig();
+
     for (const bookmark of config.PROVIDERS as Bookmark[]) {
       await this.addBookmark(bookmark);
     }
-    return config.PROVIDERS;
+    return config.PROVIDERS as Bookmark[];
+  }
+
+  async findBookmark(
+    url: string,
+    method: string,
+    type: string,
+  ): Promise<Bookmark | null> {
+    const bookmarks = await this.getBookmarks();
+
+    //console.log('bookmarks', bookmarks);
+    return (
+      bookmarks.find((bookmark) => {
+        //TEST: debug regex
+
+        const regex = new RegExp(bookmark.urlRegex);
+        const result =
+          regex.test(url) &&
+          bookmark.method === method &&
+          bookmark.type === type;
+
+        if (
+          bookmark.id === '3' &&
+          url.includes('getPastOrdersV1') &&
+          method === bookmark.method &&
+          type === bookmark.type
+        ) {
+          console.log('request', url, method, type);
+          console.log(
+            'bookmark',
+            bookmark.urlRegex,
+            bookmark.method,
+            bookmark.type,
+          );
+
+          console.log('result', result);
+        }
+
+        return result;
+      }) || null
+    );
   }
 
   async findBookmark(
@@ -136,7 +172,7 @@ export class BookmarkManager {
     return jsonData;
   }
   async updateBookmark(bookmark: Bookmark): Promise<void> {
-    const id = await sha256(bookmark.url.toString());
+    const id = await sha256(bookmark.urlRegex.toString());
     const jsonData = await this.convertBookmarkToJson(bookmark);
     await chrome.storage.sync.set({
       [id]: jsonData,
@@ -144,7 +180,7 @@ export class BookmarkManager {
   }
 
   async addBookmark(bookmark: Bookmark) {
-    const id = await sha256(bookmark.url.toString());
+    const id = await sha256(bookmark.urlRegex.toString());
     const existing = await chrome.storage.sync.get(id);
     if (existing[id]) {
       return;
@@ -187,13 +223,10 @@ export class BookmarkManager {
   async convertRequestToBookmark(request: RequestHistory) {
     const currentTabInfo = await this.getCurrentTabInfo();
 
-    const cache = getCacheByTabId(currentTabInfo?.id || 0);
-
     const bookmark: Bookmark = {
       requestId: request.id,
       id: await sha256(request?.url || ''),
-      url: request?.url || '',
-      urlRegex: new RegExp(this.urlToRegex(request?.url || '')), // this conversion should be improved
+      urlRegex: new RegExp(this.urlToRegex(request?.url || '')).toString(), // this conversion should be improved
       targetUrl: currentTabInfo?.url || '',
       method: request?.method || '',
       type: request?.type || '',
