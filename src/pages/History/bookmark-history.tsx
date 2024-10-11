@@ -27,6 +27,7 @@ import { RequestHistory } from '../../entries/Background/rpc';
 import Icon from '../../components/Icon';
 import { AttestationCard } from '../../components/AttestationCard';
 import { Bookmark } from '../../reducers/bookmarks';
+import browser from 'webextension-polyfill';
 const charwise = require('charwise');
 
 const bookmarkManager = new BookmarkManager();
@@ -68,6 +69,17 @@ export default function BookmarkHistory(): ReactElement {
     await removeAllNotaryRequests();
   }, []);
 
+  const generateAttestation = useCallback(() => {
+    (async () => {
+      if (!bookmark) return;
+      await bookmarkManager.updateBookmark({
+        ...bookmark,
+        toNotarize: true,
+      });
+      window.open(bookmark?.targetUrl || '', '_blank');
+    })();
+  }, [bookmark]);
+
   if (!bookmark) return <></>;
   if (error)
     return (
@@ -93,13 +105,7 @@ export default function BookmarkHistory(): ReactElement {
 
         {
           <div
-            onClick={async () => {
-              await bookmarkManager.updateBookmark({
-                ...bookmark,
-                toNotarize: true,
-              });
-              window.open(bookmark?.targetUrl || '', '_blank');
-            }}
+            onClick={generateAttestation}
             className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
           >
             Generate new attestation

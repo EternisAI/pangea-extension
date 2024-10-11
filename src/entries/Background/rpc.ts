@@ -46,6 +46,7 @@ import { OffscreenActionTypes } from '../Offscreen/types';
 
 const charwise = require('charwise');
 import { AttrAttestation } from '../../utils/types';
+import { BookmarkManager } from '../../reducers/bookmarks';
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
@@ -84,6 +85,8 @@ export enum BackgroundActiontype {
   run_plugin_request = 'run_plugin_request',
   run_plugin_response = 'run_plugin_response',
   get_logging_level = 'get_logging_level',
+  prepare_notarization = 'prepare_notarization',
+  get_notarization_status = 'get_notarization_status',
 }
 
 export type BackgroundAction = {
@@ -193,7 +196,8 @@ export const initRPC = () => {
         case BackgroundActiontype.get_logging_level:
           getLoggingFilter().then(sendResponse);
           return true;
-        default:
+        case BackgroundActiontype.get_notarization_status:
+          return handleGetNotarizationStatus(request);
           break;
       }
     },
@@ -661,6 +665,12 @@ async function handleConnect(request: BackgroundAction) {
   }
 
   return true;
+}
+
+async function handleGetNotarizationStatus(request: BackgroundAction) {
+  const bookmarkManager = new BookmarkManager();
+  const bookmarks = await bookmarkManager.getBookmarks();
+  return bookmarks.find((bookmark) => bookmark.toNotarize);
 }
 
 async function handleGetHistory(request: BackgroundAction) {

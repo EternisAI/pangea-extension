@@ -11,6 +11,7 @@ import Modal, { ModalContent } from '../Modal/Modal';
 import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
+import browser from 'webextension-polyfill';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {

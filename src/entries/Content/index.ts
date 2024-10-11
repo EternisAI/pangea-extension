@@ -3,6 +3,14 @@ import { ContentScriptRequest, ContentScriptTypes, RPCServer } from './rpc';
 import { BackgroundActiontype, RequestHistory } from '../Background/rpc';
 import { urlify } from '../../utils/misc';
 import { TARGET_PAGES } from '../../utils/constants';
+import { Bookmark } from '../../reducers/bookmarks';
+
+// Custom console log
+const originalConsoleLog = console.log;
+console.log = function (...args) {
+  originalConsoleLog.apply(console, ['[🌎Pangea]', ...args]);
+};
+
 (async () => {
   loadScript('content.bundle.js');
 
@@ -236,16 +244,7 @@ function getPopupData() {
 // for example, redirecting to reddit user profile page after landing on main page
 // profile
 
-let notarization = false;
-
-browser.runtime.onMessage.addListener((message) => {
-  if (message.type === 'SET_NOTARIZATION') {
-    notarization = message.value;
-    console.log('Notarization set to:', notarization);
-  }
-});
-
-function findTargetPage() {
+function findTargetPage(bookmark: Bookmark) {
   return TARGET_PAGES.filter((page) => window.location.href === page.url)[0];
 }
 
@@ -258,23 +257,38 @@ function findAndClickElement(selector: string) {
 
   if (element) {
     element.click();
-    console.log('User link found and clicked!');
-    console.log('Clicked link:', element.href);
   } else {
-    console.log('No user link found matching the pattern.');
+    console.log('🟡 No html element found matching the pattern.');
   }
 }
 
 // Main function
-function main() {
-  const targetPage = findTargetPage();
+async function performPreNotarizationAction() {
+  //check if there is a notarization ongoing
+  const request: Bookmark | undefined = await browser.runtime.sendMessage({
+    type: BackgroundActiontype.get_notarization_status,
+  });
+
+  if (!request) return console.log('No notarization to run. 😴');
+
+  console.log('request.targetUrl', request.targetUrl, window.location.href);
+  if (
+    !window.location.href.includes(request.targetUrl) &&
+    !request.targetUrl.includes(window.location.href)
+  )
+    return;
+
+  const targetPage = findTargetPage(request);
+
   if (targetPage) {
-    console.log(`[🌎 Pangea] We are on ${targetPage.url} homepage.`);
+    console.log(`We are on ${targetPage.url} page. Redirecting...`);
     findAndClickElement(targetPage.selector);
   } else {
-    console.log('[🌎 Pangea]No target page found. Taking no action.');
+    console.log(
+      '🟡 A notarization is ongoing but no action to perform was found.',
+    );
   }
 }
 
 // Run the script when the page is fully loaded
-window.addEventListener('load', main);
+window.addEventListener('load', performPreNotarizationAction);

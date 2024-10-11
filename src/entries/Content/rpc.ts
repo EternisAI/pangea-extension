@@ -9,6 +9,7 @@ export enum ContentScriptTypes {
   get_plugins = 'tlsn/cs/get_plugins',
   run_plugin = 'tlsn/cs/run_plugin',
   load_page = 'tlsn/cs/load_page',
+  prepare_notarization = 'tlsn/cs/prepare_notarization',
 }
 
 export type ContentScriptRequest<params> = {
