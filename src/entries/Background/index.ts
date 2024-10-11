@@ -16,13 +16,17 @@ import browser from 'webextension-polyfill';
     });
   });
 
-  chrome.contextMenus.onClicked.addListener((info, tab) => {
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === 'find-request') {
-      console.log('Find request clicked', info, tab);
-      if (!tab?.id) return;
-      if (!info.selectionText) return;
+      if (!tab?.id || !info.selectionText) return;
       const cachedRequest = getCachedRequestByText(tab.id, info.selectionText);
-      console.log(cachedRequest);
+      if (!cachedRequest || !cachedRequest.requestId) return;
+      chrome.storage.local.set(
+        { navigateTo: `/requests/${cachedRequest?.requestId}` },
+        () => {
+          chrome.action.openPopup();
+        },
+      );
     }
   });
 
