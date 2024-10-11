@@ -16,16 +16,26 @@ import { getNotaryApi, getProxyApi } from './storage';
 import { minimatch } from 'minimatch';
 import { getCookiesByHost, getHeadersByHost } from '../entries/Background/db';
 
-import { AttrAttestation } from '../utils/types';
+import { AttrAttestation, NotaryConfig } from '../utils/types';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
+import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from './constants';
 const charwise = require('charwise');
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function reqTypeToName(type: string) {
+  switch (type) {
+    case 'xmlhttprequest':
+      return 'XHR';
+
+    default:
+      return type;
+  }
+}
 export function parseAttributeFromRequest(
   attributeAttestation: AttrAttestation,
 ) {
@@ -484,4 +494,14 @@ export function extractHostFromUrl(url: string) {
 export function extractPathFromUrl(url: string) {
   const u = new URL(url);
   return u.pathname.substring(1);
+}
+
+export async function getNotaryConfig() {
+  const res = await fetch(DEFAULT_CONFIG_ENDPOINT, {
+    headers: {
+      'Cache-Control': `max-age=${CONFIG_CACHE_AGE}`,
+    },
+  });
+  const config: NotaryConfig = await res.json();
+  return config;
 }

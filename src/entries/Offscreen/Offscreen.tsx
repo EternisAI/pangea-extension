@@ -16,6 +16,27 @@ import { Method } from '@eternis/tlsn-js/wasm/pkg';
 const { init, verify_attestation, Prover, NotarizedSession, TlsProof }: any =
   Comlink.wrap(new Worker(new URL('./worker.ts', import.meta.url)));
 
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  baseDelay = 1000,
+): Promise<T> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      console.error(`Attempt ${attempt + 1} failed:`, error);
+      if (attempt === maxRetries - 1) {
+        throw error;
+      }
+      const delay = baseDelay * Math.pow(2, attempt);
+      console.log(`Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Max retries reached');
+}
+
 const Offscreen = () => {
   useEffect(() => {
     (async () => {
@@ -26,7 +47,6 @@ const Offscreen = () => {
       // @ts-ignore
       chrome.runtime.onMessage.addListener(
         async (request, sender, sendResponse) => {
-          console.log('request', request);
           switch (request.type) {
             case OffscreenActionTypes.remote_attestation_verification: {
               console.log(
@@ -66,7 +86,9 @@ const Offscreen = () => {
 
               (async () => {
                 try {
-                  const proof = await createProof(request.data);
+                  const proof = await withRetry(() =>
+                    createProof(request.data),
+                  );
                   browser.runtime.sendMessage({
                     type: BackgroundActiontype.finish_prove_request,
                     data: {
@@ -83,7 +105,7 @@ const Offscreen = () => {
                     },
                   });
                 } catch (error) {
-                  console.error(error);
+                  console.error('All attempts failed:', error);
                   browser.runtime.sendMessage({
                     type: BackgroundActiontype.finish_prove_request,
                     data: {
@@ -94,10 +116,7 @@ const Offscreen = () => {
 
                   browser.runtime.sendMessage({
                     type: OffscreenActionTypes.notarization_response,
-                    data: {
-                      id,
-                      error,
-                    },
+                    data: { id, error },
                   });
                 }
               })();
@@ -109,7 +128,9 @@ const Offscreen = () => {
 
               (async () => {
                 try {
-                  const proof = await createProof(request.data);
+                  const proof = await withRetry(() =>
+                    createProof(request.data),
+                  );
                   console.log('BackgroundActiontype ', proof);
                   browser.runtime.sendMessage({
                     type: BackgroundActiontype.finish_prove_request,
@@ -119,7 +140,7 @@ const Offscreen = () => {
                     },
                   });
                 } catch (error) {
-                  console.error(error);
+                  console.error('All attempts failed:', error);
                   browser.runtime.sendMessage({
                     type: BackgroundActiontype.finish_prove_request,
                     data: {
