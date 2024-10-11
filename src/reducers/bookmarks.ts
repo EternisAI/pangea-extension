@@ -97,56 +97,18 @@ export class BookmarkManager {
   ): Promise<Bookmark | null> {
     const bookmarks = await this.getBookmarks();
 
-    //console.log('bookmarks', bookmarks);
     return (
       bookmarks.find((bookmark) => {
-        //TEST: debug regex
-
         const regex = new RegExp(bookmark.urlRegex);
         const result =
           regex.test(url) &&
           bookmark.method === method &&
           bookmark.type === type;
 
-        if (
-          bookmark.id === '3' &&
-          url.includes('getPastOrdersV1') &&
-          method === bookmark.method &&
-          type === bookmark.type
-        ) {
-          console.log('request', url, method, type);
-          console.log(
-            'bookmark',
-            bookmark.urlRegex,
-            bookmark.method,
-            bookmark.type,
-          );
-
-          console.log('result', result);
-        }
-
         return result;
       }) || null
     );
   }
-
-  // async findBookmark(
-  //   url: string,
-  //   method: string,
-  //   type: string,
-  // ): Promise<Bookmark | null> {
-  //   const bookmarks = await this.getBookmarks();
-  //   return (
-  //     bookmarks.find((bookmark) => {
-  //       bookmark.urlRegex = new RegExp(bookmark.urlRegex);
-  //       const result =
-  //         bookmark.urlRegex.test(url) &&
-  //         bookmark.method === method &&
-  //         bookmark.type === type;
-  //       return result;
-  //     }) || null
-  //   );
-  // }
 
   async getBookmarks(): Promise<Bookmark[]> {
     await this.getDefaultProviders();
