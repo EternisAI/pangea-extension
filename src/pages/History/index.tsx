@@ -179,7 +179,8 @@ export function OneRequestHistory(props: {
   const addBookmark = useCallback(
     async (request: RequestHistory) => {
       setSuccessBookmark(true);
-      bookmarkManager.addBookmark(request);
+      const bm = await bookmarkManager.convertRequestToBookmark(request);
+      bookmarkManager.addBookmark(bm);
     },
     [request],
   );

@@ -220,10 +220,6 @@ export function AttestationCard({
             <>
               <div
                 onClick={() => {
-                  if (!showDate) {
-                    navigate(`${location.pathname}/attestation/${requestId}`);
-                    return;
-                  }
                   navigate(
                     `/history/${requestUrl?.host}/attestation/${requestId}`,
                   );

@@ -20,6 +20,28 @@ export type AttrAttestation = {
   attestations: string;
 };
 
+export type Provider = {
+  id: string;
+  host: string;
+  urlRegex: string; // url of request that is notarized
+  targetUrl: string; //url where user is redirected to
+  method: string;
+  type: string;
+  title: string;
+  description: string;
+  responseSelector: string;
+  valueTransform: string;
+  icon: string;
+};
+
+export type NotaryConfig = {
+  EXPECTED_PCRS: {
+    '1': string;
+    '2': string;
+  };
+  PROVIDERS: Array<Provider>;
+};
+
 type AssertionOperator =
   | 'exist'
   | '='

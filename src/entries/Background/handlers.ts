@@ -105,6 +105,20 @@ export const handleNotarization = (
     const isEnabled = storage['enable-extension'];
     if (!isEnabled) return;
 
+    const { tabId, requestId, frameId, url, method, type } = details;
+    const cache = getCacheByTabId(tabId);
+
+    if (tabId === -1 || frameId === -1) return;
+
+    const req = cache.get<RequestLog>(requestId);
+    if (!req) return;
+
+    const bookmarkManager = new BookmarkManager();
+    const bookmark = await bookmarkManager.findBookmark(url, method, type);
+    if (!bookmark || !bookmark.toNotarize) {
+      return;
+    }
+
     //prevent spamming of requests
     const lastNotaryRequest = await getLastNotaryRequest();
     console.log('lastNotaryRequest', lastNotaryRequest);
@@ -116,44 +130,13 @@ export const handleNotarization = (
       }
     }
 
-    const { tabId, requestId, frameId, url, method, type } = details;
-    const cache = getCacheByTabId(tabId);
-
-    if (tabId === -1 || frameId === -1) return;
-
-    const req = cache.get<RequestLog>(requestId);
-
-    //verify that url is part of the bookmarked providers
-    const bookmarkManager = new BookmarkManager();
-    const bookmarks = await bookmarkManager.getBookmarks();
-    const bookmark = bookmarks.find(
-      (bm) => url.includes(bm.url) && method === bm.method && type === bm.type,
-    );
-    const bookmarkIds = await bookmarkManager.getBookmarkIds();
-
-    // console.log('=================');
-    // console.log('handleNotarization');
-    // console.log('url', url);
-    // console.log('method', method);
-    // console.log('type', type);
-    // console.log('tabId', tabId);
-    // console.log('id', requestId);
-    // console.log('=================');
-
-    // console.log('bookmarks', bookmarks);
-    // console.log('bookmarkIds', bookmarkIds);
-
-    if (!bookmark || !req) return;
-
-    console.log('req', req);
-
-    const requestHeaders = req?.requestHeaders;
-    const requestBody = req?.requestBody || req?.formData;
+    if (!bookmark) return;
 
     const hostname = urlify(req.url)?.hostname;
-
-    const headers: { [k: string]: string } = req.requestHeaders.reduce(
-      (acc: any, h) => {
+    if (!hostname) return;
+    const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
+      (acc: { [k: string]: string }, h) => {
+        if (!h.name || !h.value) return acc;
         acc[h.name] = h.value;
         return acc;
       },
@@ -185,7 +168,13 @@ export const handleNotarization = (
         },
       },
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      () => {},
+      async () => {
+        await bookmarkManager.updateBookmark({
+          ...bookmark,
+          toNotarize: false,
+          notarizedAt: Date.now(),
+        });
+      },
     );
   });
 };

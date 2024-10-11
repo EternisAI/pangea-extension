@@ -22,7 +22,6 @@ export default function Bookmarks(): ReactElement {
 
   const fetchBookmarks = useCallback(async () => {
     const bookmarks = await bookmarkManager.getBookmarks();
-    console.log('bookmarks', bookmarks);
     setBookmarks(bookmarks);
   }, []);
 
@@ -30,7 +29,6 @@ export default function Bookmarks(): ReactElement {
     fetchBookmarks();
   }, []);
 
-  console.log('bookmarks', bookmarks);
   return (
     <div className="flex flex-col flex-nowrap">
       <div className="text-sm font-bold mt-3 ml-4 mb-2">Popular</div>
@@ -103,8 +101,7 @@ export function OneBookmark(props: {
     '',
   );
   const { bookmark } = props;
-  const requestUrl = urlify(bookmark.url || '');
-
+  const { host } = bookmark;
   const onDelete = useCallback(async () => {
     bookmarkManager.deleteBookmark(bookmark);
     props.fetchBookmarks();
@@ -137,13 +134,13 @@ export function OneBookmark(props: {
           </div>
 
           <div className="text-black font-bold px-2 py-1 rounded-md overflow-hidden text-ellipsis">
-            {requestUrl?.host}
+            {host}
           </div>
         </div>
 
         <div className="flex flex-row">
           <div className="font-bold text-slate-400">Url</div>
-          <div className="ml-2 text-slate-800">{requestUrl?.pathname}</div>
+          <div className="ml-2 text-slate-800">{host}</div>
         </div>
         <div className="flex flex-row">
           <div className="font-bold text-slate-400">TargetUrl</div>
