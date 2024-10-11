@@ -24,6 +24,7 @@ import browser from 'webextension-polyfill';
       chrome.storage.local.set(
         { navigateTo: `/requests/${cachedRequest?.requestId}` },
         () => {
+          // @ts-ignore
           chrome.action.openPopup();
         },
       );
