@@ -74,6 +74,12 @@ const Popup = () => {
   }, []);
 
   useEffect(() => {
+    chrome.storage.local.get('navigateTo', (result) => {
+      if (result.navigateTo) {
+        navigate(result.navigateTo);
+        chrome.storage.local.remove('navigateTo');
+      }
+    });
     chrome.runtime.onMessage.addListener((request) => {
       switch (request.type) {
         case BackgroundActiontype.push_action: {

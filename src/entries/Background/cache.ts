@@ -1,4 +1,5 @@
 import NodeCache from 'node-cache';
+import { RequestLog } from './rpc';
 
 let RequestsLogs: {
   [tabId: string]: NodeCache;
@@ -17,6 +18,18 @@ export const getCacheByTabId = (tabId: number): NodeCache => {
     });
 
   return RequestsLogs[tabId];
+};
+
+export const getCachedRequestByText = (tabId: number, text: string) => {
+  const cache = getCacheByTabId(tabId);
+  if (!cache) return;
+  const key = cache
+    .keys()
+    .find((key: string) =>
+      cache.get<RequestLog>(key)?.responseBody?.includes(text),
+    );
+  if (!key) return;
+  return cache.get<RequestLog>(key);
 };
 
 export const clearRequestCache = () => {

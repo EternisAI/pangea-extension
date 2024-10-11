@@ -130,8 +130,6 @@ export const handleNotarization = (
       }
     }
 
-    if (!bookmark) return;
-
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
     const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
@@ -142,6 +140,42 @@ export const handleNotarization = (
       },
       { Host: hostname },
     );
+
+    if (req.type === 'xmlhttprequest' || req.type === 'main_frame') {
+      if (req.url.includes('dummyjson.com')) {
+        console.log('fetching request', details.url, headers);
+        fetch(details.url, {
+          headers,
+          method: req.method,
+          body: req.requestBody,
+        })
+          .then((response) => {
+            if (response.status === details.statusCode) {
+              return response.text();
+            }
+            return null;
+          })
+          .then((body) => {
+            if (!body) return;
+            const existing = cache.get<RequestLog>(requestId);
+            if (!existing) return;
+            cache.set(requestId, {
+              ...existing,
+              responseBody: body,
+            });
+            console.log('cached request id', requestId, {
+              ...existing,
+              responseBody: body,
+            });
+          })
+          .catch((error) => {
+            console.error(
+              'Error fetching response body from replied request:',
+              error,
+            );
+          });
+      }
+    }
 
     //TODO: for some reason, these needs to be override to work
     headers['Accept-Encoding'] = 'identity';
