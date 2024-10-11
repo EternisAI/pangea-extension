@@ -1,10 +1,10 @@
 {
-  "name": "eternis-extension",
+  "name": "pangea-extension",
   "version": "0.1.0.6",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tlsnotary/tlsn-extension.git"
+    "url": "https://github.com/EternisAI/pangea-extension"
   },
   "scripts": {
     "clone:tlsn": "bash ./utils/download-tlsn.sh",
