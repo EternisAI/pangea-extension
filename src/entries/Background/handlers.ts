@@ -177,23 +177,6 @@ export const handleNotarization = (
       }
     }
 
-    const bookmarkManager = new BookmarkManager();
-    const bookmark = await bookmarkManager.findBookmark(url, method, type);
-    if (!bookmark || !bookmark.toNotarize) {
-      return;
-    }
-
-    //prevent spamming of requests
-    const lastNotaryRequest = await getLastNotaryRequest();
-    console.log('lastNotaryRequest', lastNotaryRequest);
-
-    if (lastNotaryRequest) {
-      const timeDiff = Date.now() - lastNotaryRequest.timestamp;
-      if (timeDiff < NOTARIZATION_BUFFER_TIME) {
-        return;
-      }
-    }
-
     //TODO: for some reason, these needs to be override to work
     headers['Accept-Encoding'] = 'identity';
     headers['Connection'] = 'close';

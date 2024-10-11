@@ -130,23 +130,23 @@ export class BookmarkManager {
     );
   }
 
-  async findBookmark(
-    url: string,
-    method: string,
-    type: string,
-  ): Promise<Bookmark | null> {
-    const bookmarks = await this.getBookmarks();
-    return (
-      bookmarks.find((bookmark) => {
-        bookmark.urlRegex = new RegExp(bookmark.urlRegex);
-        const result =
-          bookmark.urlRegex.test(url) &&
-          bookmark.method === method &&
-          bookmark.type === type;
-        return result;
-      }) || null
-    );
-  }
+  // async findBookmark(
+  //   url: string,
+  //   method: string,
+  //   type: string,
+  // ): Promise<Bookmark | null> {
+  //   const bookmarks = await this.getBookmarks();
+  //   return (
+  //     bookmarks.find((bookmark) => {
+  //       bookmark.urlRegex = new RegExp(bookmark.urlRegex);
+  //       const result =
+  //         bookmark.urlRegex.test(url) &&
+  //         bookmark.method === method &&
+  //         bookmark.type === type;
+  //       return result;
+  //     }) || null
+  //   );
+  // }
 
   async getBookmarks(): Promise<Bookmark[]> {
     await this.getDefaultProviders();
