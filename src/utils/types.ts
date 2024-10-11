@@ -23,8 +23,8 @@ export type AttrAttestation = {
 export type Provider = {
   id: string;
   host: string;
-  urlRegex: string;
-  targetUrl: string;
+  urlRegex: string; // url of request that is notarized
+  targetUrl: string; //url where user is redirected to
   method: string;
   type: string;
   title: string;
