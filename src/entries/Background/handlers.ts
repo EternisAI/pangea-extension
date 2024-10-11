@@ -126,6 +126,7 @@ export const handleNotarization = (
 
     if (req.type === 'xmlhttprequest' || req.type === 'main_frame') {
       if (req.url.includes('dummyjson.com')) {
+        console.log('fetching request', details.url, headers);
         fetch(details.url, {
           headers,
           method: req.method,
@@ -142,6 +143,10 @@ export const handleNotarization = (
             const existing = cache.get<RequestLog>(requestId);
             if (!existing) return;
             cache.set(requestId, {
+              ...existing,
+              responseBody: body,
+            });
+            console.log('cached request id', requestId, {
               ...existing,
               responseBody: body,
             });
