@@ -42,6 +42,7 @@ export type NotaryConfig = {
   PROVIDERS: Array<Provider>;
 };
 
+//TODO: WIP
 type AssertionOperator =
   | 'exist'
   | '='
@@ -58,23 +59,18 @@ type Assertion = {
   value: string; //if operator exist then expects empty string
 };
 
-export type NotarizationConfig = {
-  EXPECTED_PCRS: {
-    [key: string]: string;
-  };
-  PROVIDERS: Array<{
-    id: string;
-    url: string;
-    urlRegex: string;
-    targetUrl: string;
-    method: string;
-    title: string;
-    description: string;
-    responseSelector: string[]; // regex to extract elements from the response
-    responseTransformations: string[]; // transformations to apply to the response before making assertions
-    assertions: Assertion[]; // assertions that will be made for element selected, in same order as in response selector
-    icon: string;
-  }>;
+export type NewProvider = {
+  id: string;
+  url: string;
+  urlRegex: string;
+  targetUrl: string;
+  method: string;
+  title: string;
+  description: string;
+  responseSelector: string[]; // regex to extract elements from the response
+  responseTransformations: string[]; // transformations to apply to the response before making assertions
+  assertions: Assertion[]; // assertions that will be made for element selected, in same order as in response selector
+  icon: string;
 };
 
 // const CONFIG_EXAMPLE: Config = {
