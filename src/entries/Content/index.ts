@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import { ContentScriptRequest, ContentScriptTypes, RPCServer } from './rpc';
 import { BackgroundActiontype, RequestHistory } from '../Background/rpc';
 import { urlify } from '../../utils/misc';
-
+import { TARGET_PAGES } from '../../utils/constants';
 (async () => {
   loadScript('content.bundle.js');
 
@@ -231,3 +231,50 @@ function getPopupData() {
     },
   };
 }
+
+// redirect to appropriate pages where request to notarize is located
+// for example, redirecting to reddit user profile page after landing on main page
+// profile
+
+let notarization = false;
+
+browser.runtime.onMessage.addListener((message) => {
+  if (message.type === 'SET_NOTARIZATION') {
+    notarization = message.value;
+    console.log('Notarization set to:', notarization);
+  }
+});
+
+function findTargetPage() {
+  return TARGET_PAGES.filter((page) => window.location.href === page.url)[0];
+}
+
+// Function to find and click the specified element
+function findAndClickElement(selector: string) {
+  // Updated selector to find 'a' tags with href matching /user/{something}/
+  const element: HTMLLinkElement | null = document.querySelector(selector);
+
+  console.log(element);
+
+  if (element) {
+    element.click();
+    console.log('User link found and clicked!');
+    console.log('Clicked link:', element.href);
+  } else {
+    console.log('No user link found matching the pattern.');
+  }
+}
+
+// Main function
+function main() {
+  const targetPage = findTargetPage();
+  if (targetPage) {
+    console.log(`[🌎 Pangea] We are on ${targetPage.url} homepage.`);
+    findAndClickElement(targetPage.selector);
+  } else {
+    console.log('[🌎 Pangea]No target page found. Taking no action.');
+  }
+}
+
+// Run the script when the page is fully loaded
+window.addEventListener('load', main);

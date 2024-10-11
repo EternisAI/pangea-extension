@@ -110,7 +110,7 @@ export class BookmarkManager {
 
         if (
           bookmark.id === '3' &&
-          url.includes('getPastOrdersV1') &&
+          url.includes('reddit') &&
           method === bookmark.method &&
           type === bookmark.type
         ) {

@@ -1,3 +1,5 @@
+import { TargetPage } from './types';
+
 export const EXPLORER_API = 'https://explorer.tlsnotary.org';
 export const MAX_RECV = 16384;
 export const MAX_SENT = 4096;
@@ -27,3 +29,10 @@ export const DEFAULT_CONFIG_ENDPOINT =
   'https://eternis-extension-providers.s3.amazonaws.com/default-config-73690c4405adceb15942d1aa9452b4231ea3771c.json';
 
 export const CONFIG_CACHE_AGE = 600; // 10 minutes
+
+export const TARGET_PAGES: TargetPage[] = [
+  {
+    url: 'https://www.reddit.com/',
+    selector: 'a[href^="/user/"][href$="/"]',
+  },
+];

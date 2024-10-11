@@ -95,3 +95,8 @@ export type NewProvider = {
 //     },
 //   ],
 // };
+
+export type TargetPage = {
+  url: string;
+  selector: string;
+};
