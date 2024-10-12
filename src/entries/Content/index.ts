@@ -2,7 +2,6 @@ import browser from 'webextension-polyfill';
 import { ContentScriptRequest, ContentScriptTypes, RPCServer } from './rpc';
 import { BackgroundActiontype, RequestHistory } from '../Background/rpc';
 import { urlify } from '../../utils/misc';
-import { TARGET_PAGES } from '../../utils/constants';
 import { Bookmark } from '../../reducers/bookmarks';
 
 // Custom console log
@@ -244,10 +243,6 @@ function getPopupData() {
 // for example, redirecting to reddit user profile page after landing on main page
 // profile
 
-function findTargetPage(bookmark: Bookmark) {
-  return TARGET_PAGES.filter((page) => window.location.href === page.url)[0];
-}
-
 // Function to find and click the specified element
 function findAndClickElement(selector: string) {
   // Updated selector to find 'a' tags with href matching /user/{something}/
@@ -278,16 +273,17 @@ async function performPreNotarizationAction() {
   )
     return;
 
-  const targetPage = findTargetPage(request);
+  console.log('request.actionSelectors', request.actionSelectors);
 
-  if (targetPage) {
-    console.log(`We are on ${targetPage.url} page. Redirecting...`);
-    findAndClickElement(targetPage.selector);
-  } else {
-    console.log(
+  const element = request.actionSelectors?.[0];
+
+  if (!element)
+    return console.log(
       '🟡 A notarization is ongoing but no action to perform was found.',
     );
-  }
+
+  console.log(`Redirecting...`);
+  findAndClickElement(element);
 }
 
 // Run the script when the page is fully loaded

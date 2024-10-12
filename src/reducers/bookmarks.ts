@@ -19,6 +19,7 @@ export type Bookmark = {
   icon?: string;
   toNotarize?: boolean;
   notarizedAt?: number;
+  actionSelectors?: string[];
 };
 
 export class BookmarkManager {
