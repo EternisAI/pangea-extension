@@ -110,10 +110,7 @@ export class BookmarkManager {
         //TEST: debug regex
 
         const regex = new RegExp(bookmark.urlRegex);
-        const result =
-          regex.test(url) &&
-          bookmark.method === method &&
-          bookmark.type === type;
+        const result = regex.test(url) && bookmark.method === method;
 
         if (
           bookmark.id === '3' &&
