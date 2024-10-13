@@ -115,22 +115,15 @@ export const handleNotarization = (
 
     const bookmarkManager = new BookmarkManager();
     const bookmark = await bookmarkManager.findBookmark(url, method, type);
-    if (!bookmark || !bookmark.toNotarize) {
-      return;
-    }
+    if (!bookmark) return;
 
-    //prevent spamming of requests
     const lastNotaryRequest = await getLastNotaryRequest();
-    console.log('lastNotaryRequest', lastNotaryRequest);
-
-    if (lastNotaryRequest) {
+    if (lastNotaryRequest && !bookmark.toNotarize) {
       const timeDiff = Date.now() - lastNotaryRequest.timestamp;
-      if (timeDiff < NOTARIZATION_BUFFER_TIME) {
+      if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
         return;
       }
     }
-
-    if (!bookmark) return;
 
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
