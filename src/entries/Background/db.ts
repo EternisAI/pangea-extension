@@ -172,13 +172,18 @@ export async function getNotaryRequest(
   return historyDb.get(id).catch(() => null);
 }
 
-export async function getLastNotaryRequest(): Promise<RequestHistory | null> {
+export async function getLastNotaryRequest(
+  regexUrl: string,
+): Promise<RequestHistory | null> {
   let lastRequest: RequestHistory | null = null;
   for await (const [key, value] of historyDb.iterator({
     reverse: true,
     limit: 1,
   })) {
-    lastRequest = value;
+    if (value.url.match(regexUrl)) {
+      lastRequest = value;
+      break;
+    }
   }
   return lastRequest;
 }
