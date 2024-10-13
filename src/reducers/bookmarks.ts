@@ -13,7 +13,7 @@ export type Bookmark = {
   urlRegex: string;
   targetUrl: string;
   method: string;
-  type: string;
+  type?: string;
   title: string;
   description: string;
   icon?: string;
