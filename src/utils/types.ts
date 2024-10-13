@@ -42,7 +42,7 @@ export interface Provider {
   urlRegex: string; // e.g. ^https://api\.x\.com/1\.1/account/settings\.json(\?.*)?$
   targetUrl: string; // URL to redirect user before notarization. e.g. https://www.x.com/home
   method: HttpMethod; // e.g. GET
-  transport: TransportMechanism; // e.g. xmlhttprequest
+  transport?: TransportMechanism; // LEGACY, type of request, is not used anymore. e.g. xmlhttprequest
   responseType: ResponseType;
   title: string;
   description: string;
