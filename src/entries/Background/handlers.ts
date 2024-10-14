@@ -21,7 +21,12 @@ import {
   NOTARIZATION_BUFFER_TIME,
 } from '../../utils/constants';
 import { Bookmark, BookmarkManager } from '../../reducers/bookmarks';
-import { get, NOTARY_API_LS_KEY, PROXY_API_LS_KEY } from '../../utils/storage';
+import {
+  get,
+  NOTARY_API_LS_KEY,
+  PROXY_API_LS_KEY,
+  EXTENSION_ENABLED,
+} from '../../utils/storage';
 
 export const onSendHeaders = (
   details: browser.WebRequest.OnSendHeadersDetailsType,
@@ -102,8 +107,7 @@ export const handleNotarization = (
 ) => {
   console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
-    const storage = await chrome.storage.sync.get('enable-extension');
-    const isEnabled = storage['enable-extension'];
+    const isEnabled = await get(EXTENSION_ENABLED);
     if (!isEnabled) return;
 
     const { tabId, requestId, frameId, url, method, type } = details;

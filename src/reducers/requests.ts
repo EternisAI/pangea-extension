@@ -15,7 +15,7 @@ import { BackgroundActiontype } from '../entries/Background/rpc';
 import browser from 'webextension-polyfill';
 import { useState, useEffect } from 'react';
 import { Dispatch, SetStateAction } from 'react';
-
+import { get, EXTENSION_ENABLED } from '../utils/storage';
 enum ActionType {
   '/requests/setRequests' = '/requests/setRequests',
   '/requests/addRequest' = '/requests/addRequest',
@@ -179,11 +179,11 @@ export const useExtensionEnabled = (): [
   const [isEnabled, setIsEnabled] = useState(false);
   useEffect(() => {
     (async () => {
-      const storage = await chrome.storage.sync.get('enable-extension');
-      const isEnabled = storage['enable-extension'];
+      const storage = await chrome.storage.sync.get(EXTENSION_ENABLED);
+      const isEnabled = storage[EXTENSION_ENABLED];
       if (isEnabled === undefined) {
         setIsEnabled(true);
-        chrome.storage.sync.set({ 'enable-extension': true });
+        chrome.storage.sync.set({ [EXTENSION_ENABLED]: true });
       } else setIsEnabled(isEnabled);
     })();
   }, []);

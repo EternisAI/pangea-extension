@@ -5,14 +5,16 @@ export const PROXY_API_LS_KEY = 'proxy-api';
 export const MAX_SENT_LS_KEY = 'max-sent';
 export const MAX_RECEIVED_LS_KEY = 'max-received';
 export const LOGGING_FILTER_KEY = 'logging-filter-2';
+export const DEV_MODE_KEY = 'dev-mode';
+export const EXTENSION_ENABLED = 'enable-extension';
 
 import { NOTARY_API, NOTARY_PROXY } from './constants';
 
-export async function set(key: string, value: string) {
+export async function set(key: string, value: any) {
   return chrome.storage.sync.set({ [key]: value });
 }
 
-export async function get(key: string, defaultValue?: string) {
+export async function get(key: string, defaultValue?: any) {
   return chrome.storage.sync
     .get(key)
     .then((json: any) => json[key] || defaultValue)

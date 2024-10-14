@@ -17,6 +17,8 @@ import {
   getProxyApi,
   getLoggingFilter,
   LOGGING_FILTER_KEY,
+  DEV_MODE_KEY,
+  get,
 } from '../../utils/storage';
 import {
   NOTARY_API,
@@ -53,6 +55,7 @@ export default function Options(): ReactElement {
   const [showReloadModal, setShowReloadModal] = useState(false);
   const navigate = useNavigate();
   const requests = useUniqueRequests();
+  const [devMode, setDevMode] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -61,6 +64,7 @@ export default function Options(): ReactElement {
       setMaxReceived((await getMaxRecv()) || MAX_RECV);
       setMaxSent((await getMaxSent()) || MAX_SENT);
       setLoggingLevel((await getLoggingFilter()) || 'Info');
+      setDevMode((await get(DEV_MODE_KEY)) || false);
     })();
   }, [advanced]);
 
@@ -91,6 +95,11 @@ export default function Options(): ReactElement {
   const onAdvanced = useCallback(() => {
     setAdvanced(!advanced);
   }, [advanced]);
+
+  const toggleDevMode = useCallback(() => {
+    setDevMode(!devMode);
+    set(DEV_MODE_KEY, devMode.toString());
+  }, [devMode]);
 
   return (
     <div className="flex flex-col flex-nowrap flex-grow">
@@ -134,6 +143,8 @@ export default function Options(): ReactElement {
         proxy={proxy}
         setProxy={setProxy}
         setDirty={setDirty}
+        toggleDevMode={toggleDevMode}
+        devMode={devMode}
       />
       <div className="justify-left px-2 pt-3 gap-2">
         <button
@@ -210,14 +221,38 @@ function NormalOptions(props: {
   proxy: string;
   setProxy: (value: string) => void;
   setDirty: (value: boolean) => void;
+  toggleDevMode: () => void;
+  devMode: boolean;
 }) {
-  const { notary, setNotary, proxy, setProxy, setDirty } = props;
+  const {
+    notary,
+    setNotary,
+    proxy,
+    setProxy,
+    setDirty,
+    toggleDevMode,
+    devMode,
+  } = props;
 
   return (
     <div>
       <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
         {/* <div className="font-semibold">Version</div>
         <div className="input border bg-slate-100">{version}</div> */}
+      </div>
+
+      <div className="flex items-center py-1 px-2 gap-2">
+        <input
+          type="checkbox"
+          id="devmode"
+          className=" "
+          onChange={toggleDevMode}
+          checked={devMode}
+        />
+
+        <label htmlFor="devmode" className="font-semibold cursor-pointer">
+          Enable dev mode
+        </label>
       </div>
 
       {MODE === Mode.Development && (
