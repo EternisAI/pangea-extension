@@ -119,7 +119,7 @@ export default function Options(): ReactElement {
           </div>
         </Modal>
       )}
-      <div className="flex flex-col flex-nowrap flex-grow p-4">
+      <div className="flex flex-col   p-4">
         <NavButton
           ImageIcon={<Search />}
           title="Search requests"

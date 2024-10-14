@@ -29,3 +29,5 @@ export const DEFAULT_CONFIG_ENDPOINT =
   'https://eternis-extension-providers.s3.amazonaws.com/default-config-048765dc7dca53ad.json';
 
 export const CONFIG_CACHE_AGE = 600; // seconds
+
+export const VERIFIER_APP_URL = 'https://verifier.eternis.ai/';
