@@ -14,13 +14,13 @@ jobs:
       - name: Checkout current project
         uses: actions/checkout@v3
 
-      # - name: Checkout tlsn-js
-      #   uses: actions/checkout@v3
-      #   with:
-      #     repository: eternisai/tlsn-js
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     path: tlsn-js
-      #     ref: remote-attestation
+      - name: Checkout tlsn-js
+        uses: actions/checkout@v3
+        with:
+          repository: eternisai/tlsn-js
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: tlsn-js
+          ref: remote-attestation
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -35,7 +35,7 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          #  ./tlsn-js/node_modules
+            ./tlsn-js/node_modules
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
@@ -45,14 +45,14 @@ jobs:
       - name: Display directory structure
         run: tree -L 2 && npm --version
 
-      # - name: Install dependencies
-      #   run: |
-      #     cd ./tlsn-js && npm i && cd -
-      #     sed -i -e 's/\.\.\/tlsn-js/\.\/tlsn-js/g' package.json
-      #     npm i
+      - name: Install dependencies
+        run: |
+          cd ./tlsn-js && npm i && cd -
+          sed -i -e 's/\.\.\/tlsn-js/\.\/tlsn-js/g' package.json
+          npm i
 
-      # - name: Build tlsn-js
-      #   run: cd ./tlsn-js && npm run build && cd -
+      - name: Build tlsn-js
+        run: cd ./tlsn-js && npm run build && cd -
 
       - name: Build current project
         run: npm run build
