@@ -21,7 +21,12 @@ import {
   NOTARIZATION_BUFFER_TIME,
 } from '../../utils/constants';
 import { Bookmark, BookmarkManager } from '../../reducers/bookmarks';
-import { get, NOTARY_API_LS_KEY, PROXY_API_LS_KEY } from '../../utils/storage';
+import {
+  get,
+  NOTARY_API_LS_KEY,
+  PROXY_API_LS_KEY,
+  EXTENSION_ENABLED,
+} from '../../utils/storage';
 
 export const onSendHeaders = (
   details: browser.WebRequest.OnSendHeadersDetailsType,
@@ -100,37 +105,36 @@ export const onBeforeRequest = (
 export const handleNotarization = (
   details: browser.WebRequest.OnCompletedDetailsType,
 ) => {
+  console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
-    const storage = await chrome.storage.sync.get('enable-extension');
-    const isEnabled = storage['enable-extension'];
+    const isEnabled = await get(EXTENSION_ENABLED);
     if (!isEnabled) return;
 
     const { tabId, requestId, frameId, url, method, type } = details;
     const cache = getCacheByTabId(tabId);
 
+    //console.log('🟢 intercepted request', url);
     if (tabId === -1 || frameId === -1) return;
 
     const req = cache.get<RequestLog>(requestId);
     if (!req) return;
 
+    //console.log('🟢 check bookmark exist', url, method, type);
     const bookmarkManager = new BookmarkManager();
     const bookmark = await bookmarkManager.findBookmark(url, method, type);
-    if (!bookmark || !bookmark.toNotarize) {
-      return;
-    }
+    if (!bookmark) return;
+    //console.log('🟢 bookmark exist', bookmark);
 
-    //prevent spamming of requests
-    const lastNotaryRequest = await getLastNotaryRequest();
-    console.log('lastNotaryRequest', lastNotaryRequest);
-
-    if (lastNotaryRequest) {
-      const timeDiff = Date.now() - lastNotaryRequest.timestamp;
-      if (timeDiff < NOTARIZATION_BUFFER_TIME) {
+    const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
+    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
+      const timeDiff = Date.now() - bookmark.notarizedAt;
+      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
+      if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
+        //console.log('🟢 timediff not ok');
         return;
       }
     }
-
-    if (!bookmark) return;
+    //console.log('🟢 timediff ok');
 
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;

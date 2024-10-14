@@ -3,6 +3,8 @@ import { RequestHistory, RequestLog } from '../entries/Background/rpc';
 import { sha256, getNotaryConfig } from '../utils/misc';
 import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
 import { getCacheByTabId } from '../entries/Background/cache';
+import { Provider } from '../utils/types';
+
 export type Bookmark = {
   id?: string;
   host?: string;
@@ -11,14 +13,13 @@ export type Bookmark = {
   urlRegex: string;
   targetUrl: string;
   method: string;
-  type: string;
+  type?: string;
   title: string;
   description: string;
-  responseSelector: string;
-  valueTransform: string;
   icon?: string;
   toNotarize?: boolean;
   notarizedAt?: number;
+  actionSelectors?: string[];
 };
 
 export class BookmarkManager {
@@ -84,10 +85,16 @@ export class BookmarkManager {
   async getDefaultProviders(): Promise<Bookmark[]> {
     const config = await getNotaryConfig();
 
-    for (const bookmark of config.PROVIDERS as Bookmark[]) {
+    const bookmarks = config.PROVIDERS.map((provider) => ({
+      ...provider,
+      id: provider.id.toString(),
+      type: provider.transport,
+    }));
+
+    for (const bookmark of bookmarks) {
       await this.addBookmark(bookmark);
     }
-    return config.PROVIDERS as Bookmark[];
+    return bookmarks as Bookmark[];
   }
 
   async findBookmark(
@@ -103,14 +110,11 @@ export class BookmarkManager {
         //TEST: debug regex
 
         const regex = new RegExp(bookmark.urlRegex);
-        const result =
-          regex.test(url) &&
-          bookmark.method === method &&
-          bookmark.type === type;
+        const result = regex.test(url) && bookmark.method === method;
 
         if (
           bookmark.id === '3' &&
-          url.includes('getPastOrdersV1') &&
+          url.includes('reddit') &&
           method === bookmark.method &&
           type === bookmark.type
         ) {
@@ -214,8 +218,6 @@ export class BookmarkManager {
       type: request?.type || '',
       title: request.url,
       description: '',
-      responseSelector: '',
-      valueTransform: '',
       icon: '',
     };
     return bookmark;

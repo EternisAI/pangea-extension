@@ -2,6 +2,13 @@ import browser from 'webextension-polyfill';
 import { ContentScriptRequest, ContentScriptTypes, RPCServer } from './rpc';
 import { BackgroundActiontype, RequestHistory } from '../Background/rpc';
 import { urlify } from '../../utils/misc';
+import { Bookmark } from '../../reducers/bookmarks';
+
+// Custom console log
+const originalConsoleLog = console.log;
+console.log = function (...args) {
+  originalConsoleLog.apply(console, ['[🌎Pangea]', ...args]);
+};
 
 (async () => {
   loadScript('content.bundle.js');
@@ -231,3 +238,52 @@ function getPopupData() {
     },
   };
 }
+
+// redirect to appropriate pages where request to notarize is located
+// for example, redirecting to reddit user profile page after landing on main page
+// profile
+
+// Function to find and click the specified element
+function findAndClickElement(selector: string) {
+  // Updated selector to find 'a' tags with href matching /user/{something}/
+  const element: HTMLLinkElement | null = document.querySelector(selector);
+
+  console.log(element);
+
+  if (element) {
+    element.click();
+  } else {
+    console.log('🟡 No html element found matching the pattern.');
+  }
+}
+
+// Main function
+async function performPreNotarizationAction() {
+  //check if there is a notarization ongoing
+
+  const host = window.location.host;
+  const request: Bookmark | undefined = await browser.runtime.sendMessage({
+    type: BackgroundActiontype.get_notarization_status,
+    data: {
+      tab_host: host,
+    },
+  });
+  console.log('request', request);
+
+  if (!request) return console.log('No notarization to run. 😴');
+
+  console.log('request.actionSelectors', request.actionSelectors);
+
+  const element = request.actionSelectors?.[0];
+
+  if (!element)
+    return console.log(
+      '🟡 A notarization is ongoing but no action to perform was found.',
+    );
+
+  console.log(`Redirecting...`);
+  findAndClickElement(element);
+}
+
+// Run the script when the page is fully loaded
+window.addEventListener('load', performPreNotarizationAction);
