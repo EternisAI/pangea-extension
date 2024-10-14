@@ -19,6 +19,7 @@ import {
   LOGGING_FILTER_KEY,
   DEV_MODE_KEY,
   get,
+  getBoolean,
 } from '../../utils/storage';
 import {
   NOTARY_API,
@@ -39,7 +40,7 @@ import RemoteAttestationBadge from '../../components/RemoteAttestationBadge';
 import NavButton from '../../components/NavButton';
 import Search from '../../components/SvgIcons/Search';
 import { useNavigate } from 'react-router';
-import { useUniqueRequests } from '../../reducers/requests';
+import { useUniqueRequests, useDevMode } from '../../reducers/requests';
 // import { version } from '../../../package.json';
 
 export default function Options(): ReactElement {
@@ -55,8 +56,9 @@ export default function Options(): ReactElement {
   const [showReloadModal, setShowReloadModal] = useState(false);
   const navigate = useNavigate();
   const requests = useUniqueRequests();
-  const [devMode, setDevMode] = useState(false);
+  const [devMode, setDevMode] = useDevMode();
 
+  console.log('devMode', devMode);
   useEffect(() => {
     (async () => {
       setNotary((await getNotaryApi()) || NOTARY_API);
@@ -64,7 +66,7 @@ export default function Options(): ReactElement {
       setMaxReceived((await getMaxRecv()) || MAX_RECV);
       setMaxSent((await getMaxSent()) || MAX_SENT);
       setLoggingLevel((await getLoggingFilter()) || 'Info');
-      setDevMode((await get(DEV_MODE_KEY)) || false);
+      setDevMode(await getBoolean(DEV_MODE_KEY));
     })();
   }, [advanced]);
 
@@ -98,7 +100,7 @@ export default function Options(): ReactElement {
 
   const toggleDevMode = useCallback(() => {
     setDevMode(!devMode);
-    set(DEV_MODE_KEY, devMode.toString());
+    set(DEV_MODE_KEY, !devMode);
   }, [devMode]);
 
   return (
@@ -175,7 +177,7 @@ export default function Options(): ReactElement {
           setShouldReload={setShouldReload}
         />
       )}
-      <div className="flex flex-row flex-nowrap  gap-2 p-2">
+      <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
         <button
           className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
           disabled={!dirty}
@@ -241,6 +243,27 @@ function NormalOptions(props: {
         <div className="input border bg-slate-100">{version}</div> */}
       </div>
 
+      <InputField
+        label="Notary API"
+        placeholder="https://api.tlsnotary.org"
+        value={notary}
+        type="text"
+        onChange={(e) => {
+          setNotary(e.target.value);
+          setDirty(true);
+        }}
+      />
+      <InputField
+        label="Proxy API"
+        placeholder="https://proxy.tlsnotary.org"
+        value={proxy}
+        type="text"
+        onChange={(e) => {
+          setProxy(e.target.value);
+          setDirty(true);
+        }}
+      />
+
       <div className="flex items-center py-1 px-2 gap-2">
         <input
           type="checkbox"
@@ -279,26 +302,6 @@ function NormalOptions(props: {
         </div>
       )}
 
-      <InputField
-        label="Notary API"
-        placeholder="https://api.tlsnotary.org"
-        value={notary}
-        type="text"
-        onChange={(e) => {
-          setNotary(e.target.value);
-          setDirty(true);
-        }}
-      />
-      <InputField
-        label="Proxy API"
-        placeholder="https://proxy.tlsnotary.org"
-        value={proxy}
-        type="text"
-        onChange={(e) => {
-          setProxy(e.target.value);
-          setDirty(true);
-        }}
-      />
       {/* <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
         <div className="font-semibold">Explorer URL</div>
         <div className="input border bg-slate-100">{EXPLORER_API}</div>

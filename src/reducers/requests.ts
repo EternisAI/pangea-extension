@@ -15,7 +15,7 @@ import { BackgroundActiontype } from '../entries/Background/rpc';
 import browser from 'webextension-polyfill';
 import { useState, useEffect } from 'react';
 import { Dispatch, SetStateAction } from 'react';
-import { get, EXTENSION_ENABLED } from '../utils/storage';
+import { getBoolean, EXTENSION_ENABLED, DEV_MODE_KEY } from '../utils/storage';
 enum ActionType {
   '/requests/setRequests' = '/requests/setRequests',
   '/requests/addRequest' = '/requests/addRequest',
@@ -188,4 +188,14 @@ export const useExtensionEnabled = (): [
     })();
   }, []);
   return [isEnabled, setIsEnabled];
+};
+
+export const useDevMode = (): [boolean, Dispatch<SetStateAction<boolean>>] => {
+  const [devMode, setDevMode] = useState(false);
+  useEffect(() => {
+    (async () => {
+      setDevMode(await getBoolean(DEV_MODE_KEY));
+    })();
+  }, []);
+  return [devMode, setDevMode];
 };

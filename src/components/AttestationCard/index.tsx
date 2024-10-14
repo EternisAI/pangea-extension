@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router';
 import { download, urlify } from '../../utils/misc';
 import { useRequestHistory } from '../../reducers/history';
 import { deleteRequestHistory } from '../../reducers/history';
-import { getNotaryApi, getProxyApi } from '../../utils/storage';
+import { getNotaryApi, getProxyApi, DEV_MODE_KEY } from '../../utils/storage';
 import { BackgroundActiontype } from '../../entries/Background/rpc';
 import { parseAttributeFromRequest } from '../../utils/misc';
 import Modal, { ModalContent } from '../Modal/Modal';
@@ -12,6 +12,7 @@ import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
 import browser from 'webextension-polyfill';
+import { useDevMode } from '../../reducers/requests';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -69,6 +70,7 @@ export function AttestationCard({
   const location = useLocation();
   const requestUrl = urlify(request?.url || '');
   const date = formatAttestationDate(requestId, previousRequestId);
+  const [devMode, _] = useDevMode();
 
   const { status } = request || {};
 
@@ -242,14 +244,16 @@ export function AttestationCard({
                 Save
               </div>
 
-              <div
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(request));
-                }}
-                className="ml-3 cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#e2e3e8] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
-              >
-                Copy request
-              </div>
+              {devMode && (
+                <div
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(request));
+                  }}
+                  className="ml-3 cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#e2e3e8] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
+                >
+                  Copy request
+                </div>
+              )}
             </>
           )}
 

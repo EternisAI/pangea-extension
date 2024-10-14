@@ -21,6 +21,11 @@ export async function get(key: string, defaultValue?: any) {
     .catch(() => defaultValue);
 }
 
+export async function getBoolean(key: string) {
+  const value = await get(key);
+  return value === true || value === 'true';
+}
+
 export async function getMaxSent() {
   return parseInt(await get(MAX_SENT_LS_KEY, '4096'));
 }
