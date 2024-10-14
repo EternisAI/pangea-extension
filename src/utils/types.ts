@@ -39,17 +39,19 @@ type ResponseType = 'json' | 'text' | 'xml' | 'html';
 export interface Provider {
   id: number;
   host: string; // e.g. api.x.com
-  urlRegex: string; // e.g. ^https://api\.x\.com/1\.1/account/settings\.json(\?.*)?$
-  targetUrl: string; // URL to redirect user before notarization. e.g. https://www.x.com/home
-  method: HttpMethod; // e.g. GET
-  transport?: TransportMechanism; // LEGACY, type of request, is not used anymore. e.g. xmlhttprequest
-  responseType: ResponseType;
   title: string;
   description: string;
   icon: string; //url to icon image
-  actionSelectors?: string[]; // e.g. ["a[href^='/user/'][href$='/']"]
+
+  urlRegex: string; // e.g. ^https://api\.x\.com/1\.1/account/settings\.json(\?.*)?$
+  targetUrl: string; // URL to redirect user before notarization. e.g. https://www.x.com/home
+  method: HttpMethod; // e.g. GET
+  transport?: TransportMechanism; //NOTE: LEGACY, type of request, is not used anymore. e.g. xmlhttprequest
+  responseType: ResponseType;
+
+  actionSelectors?: string[]; // url to redirect user before notarization. e.g. ["a[href^='/user/'][href$='/']"] or ["https://www.x.com/home"]
+  preprocessor?: string; // Javascript function to process the response in a form that is more easy to evaluate. e.g. "function(data) { var result = ''; for (var key in data) { result += key + '=' + data[key] + '; '; } return JSON.parse(result); }"
   attributes?: string[]; // List of JMESPath expressions used to extract attributes from the provider's response.  e.g. ["screen_name"]
-  preprocessor?: string; // Javascript function e.g. "function(data) { var result = ''; for (var key in data) { result += key + '=' + data[key] + '; '; } return JSON.parse(result); }"
 }
 
 interface ExpectedPcrs {
