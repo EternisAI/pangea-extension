@@ -175,6 +175,8 @@ export default function Options(): ReactElement {
           loggingLevel={loggingLevel}
           setLoggingLevel={setLoggingLevel}
           setShouldReload={setShouldReload}
+          setNotary={setNotary}
+          setProxy={setProxy}
         />
       )}
       <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
@@ -278,30 +280,6 @@ function NormalOptions(props: {
         </label>
       </div>
 
-      {MODE === Mode.Development && (
-        <div className="flex items-center py-1 px-2 gap-2">
-          <input
-            type="checkbox"
-            id="localhost"
-            className="input border"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setNotary(NOTARY_API_LOCAL);
-                setProxy(NOTARY_PROXY_LOCAL);
-              } else {
-                setNotary(NOTARY_API);
-                setProxy(NOTARY_PROXY);
-              }
-              setDirty(true);
-            }}
-          />
-
-          <label htmlFor="localhost" className="font-semibold cursor-pointer">
-            Use localhost notary
-          </label>
-        </div>
-      )}
-
       {/* <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
         <div className="font-semibold">Explorer URL</div>
         <div className="input border bg-slate-100">{EXPLORER_API}</div>
@@ -319,6 +297,8 @@ function AdvancedOptions(props: {
   setMaxReceived: (value: number) => void;
   setDirty: (value: boolean) => void;
   setLoggingLevel: (level: LoggingLevel) => void;
+  setNotary: (value: string) => void;
+  setProxy: (value: string) => void;
 }) {
   const {
     maxSent,
@@ -329,6 +309,8 @@ function AdvancedOptions(props: {
     setLoggingLevel,
     loggingLevel,
     setShouldReload,
+    setNotary,
+    setProxy,
   } = props;
 
   return (
@@ -353,6 +335,28 @@ function AdvancedOptions(props: {
           setDirty(true);
         }}
       /> */}
+      <div className="flex items-center py-1 px-2 gap-2">
+        <input
+          type="checkbox"
+          id="localhost"
+          className="input border"
+          onChange={(e) => {
+            if (e.target.checked) {
+              setNotary(NOTARY_API_LOCAL);
+              setProxy(NOTARY_PROXY_LOCAL);
+            } else {
+              setNotary(NOTARY_API);
+              setProxy(NOTARY_PROXY);
+            }
+            setDirty(true);
+          }}
+        />
+
+        <label htmlFor="localhost" className="font-semibold cursor-pointer">
+          Use localhost notary
+        </label>
+      </div>
+
       <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
         <div className="font-semibold">Logging Level</div>
         <select
