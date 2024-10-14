@@ -119,13 +119,14 @@ export default function Options(): ReactElement {
           </div>
         </Modal>
       )}
-
-      <NavButton
-        ImageIcon={<Search />}
-        title="Search requests"
-        subtitle={`Search previous ${requests.length} requests`}
-        onClick={() => navigate('/requests')}
-      />
+      <div className="flex flex-col flex-nowrap flex-grow p-4">
+        <NavButton
+          ImageIcon={<Search />}
+          title="Search requests"
+          subtitle={`Search previous ${requests.length} requests`}
+          onClick={() => navigate('/requests')}
+        />
+      </div>
 
       <NormalOptions
         notary={notary}
