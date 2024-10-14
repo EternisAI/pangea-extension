@@ -260,18 +260,17 @@ function findAndClickElement(selector: string) {
 // Main function
 async function performPreNotarizationAction() {
   //check if there is a notarization ongoing
+
+  const host = window.location.host;
   const request: Bookmark | undefined = await browser.runtime.sendMessage({
     type: BackgroundActiontype.get_notarization_status,
+    data: {
+      tab_host: host,
+    },
   });
+  console.log('request', request);
 
   if (!request) return console.log('No notarization to run. 😴');
-
-  console.log('request.targetUrl', request.targetUrl, window.location.href);
-  if (
-    !window.location.href.includes(request.targetUrl) &&
-    !request.targetUrl.includes(window.location.href)
-  )
-    return;
 
   console.log('request.actionSelectors', request.actionSelectors);
 

@@ -668,9 +668,17 @@ async function handleConnect(request: BackgroundAction) {
 }
 
 async function handleGetNotarizationStatus(request: BackgroundAction) {
+  const { tab_host } = request.data;
+
+  console.log('tab_url', tab_host);
+
   const bookmarkManager = new BookmarkManager();
   const bookmarks = await bookmarkManager.getBookmarks();
-  return bookmarks.find((bookmark) => bookmark.toNotarize);
+
+  return bookmarks.filter(
+    (bookmark) =>
+      bookmark.targetUrl.includes(tab_host) && bookmark.toNotarize === true,
+  )[0];
 }
 
 async function handleGetHistory(request: BackgroundAction) {
