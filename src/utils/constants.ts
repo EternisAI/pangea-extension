@@ -3,7 +3,7 @@ export const MAX_RECV = 16384;
 export const MAX_SENT = 4096;
 
 export const NOTARY_API = 'https://notary.eternis.ai';
-export const NOTARY_PROXY = 'wss://inn1.eternis.ai:55688';
+export const NOTARY_PROXY = 'wss://websockify.cluster.eternis.ai:55688';
 
 export const NOTARY_API_LOCAL = 'http://localhost:7047';
 export const NOTARY_PROXY_LOCAL = 'ws://localhost:55688';
@@ -24,6 +24,6 @@ export const EXPECTED_PCRS_DEBUG = {
 export const NOTARIZATION_BUFFER_TIME = 5000;
 
 export const DEFAULT_CONFIG_ENDPOINT =
-  'https://eternis-extension-providers.s3.amazonaws.com/default-config.json';
+  'https://eternis-extension-providers.s3.amazonaws.com/default-config-73690c4405adceb15942d1aa9452b4231ea3771c.json';
 
 export const CONFIG_CACHE_AGE = 600; // 10 minutes

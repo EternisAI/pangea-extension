@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import Icon from '../Icon';
 import { useDispatch } from 'react-redux';
 import { setRequests } from '../../reducers/requests';
+import { reqTypeToName } from '../../utils/misc';
 
 type Props = {
   requests: RequestLog[];
@@ -41,6 +42,10 @@ export default function RequestTable(props: Props): ReactElement {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [query, setQuery] = useState('');
+
+  const filteredRequests = requests.filter(
+    (request) => request.method !== 'stylesheet',
+  );
 
   const fuse = new Fuse(requests, {
     isCaseSensitive: false,
@@ -92,10 +97,9 @@ export default function RequestTable(props: Props): ReactElement {
           <TableHeader>
             <TableRow>
               <TableHead>Method</TableHead>
-              <TableHead>Type</TableHead>
+
               <TableHead>Domain</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead className="w-[100px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -111,11 +115,12 @@ export default function RequestTable(props: Props): ReactElement {
                   onClick={() => navigate('/requests/' + row.requestId)}
                   className="cursor-pointer hover:bg-slate-100"
                 >
-                  <TableCell>{row.method}</TableCell>
-                  <TableCell>{row.type}</TableCell>
-                  <TableCell>{url?.host}</TableCell>
-                  <TableCell>{url?.pathname}</TableCell>
-                  <TableCell></TableCell>
+                  <TableCell className="text-xs">
+                    {row.method} | {reqTypeToName(row.type)}
+                  </TableCell>
+
+                  <TableCell className="text-xs">{url?.host}</TableCell>
+                  <TableCell className="text-xs">{url?.pathname}</TableCell>
                 </TableRow>
               );
             })}

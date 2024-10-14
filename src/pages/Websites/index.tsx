@@ -89,11 +89,10 @@ export default function Websites({
 
             {bookmarks
               .filter((bookmark) => {
+                console.log('bookmark', bookmark);
                 if (
-                  websites.find(
-                    ({ host }) => host === extractHostFromUrl(bookmark.url),
-                  ) &&
-                  favorites.hasOwnProperty(extractHostFromUrl(bookmark.url))
+                  websites.find(({ host }) => host === bookmark.host) &&
+                  favorites.hasOwnProperty(bookmark.host ?? '')
                 ) {
                   return false;
                 }

@@ -7,8 +7,6 @@ import { RequestLog } from '../../entries/Background/rpc';
 export default function Requests(): ReactElement {
   const requests = useUniqueRequests();
 
-  console.log('requests', requests);
-
   return (
     <>
       <RequestTable requests={requests} />
