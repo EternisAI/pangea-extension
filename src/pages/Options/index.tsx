@@ -34,6 +34,10 @@ import { LoggingLevel } from '@eternis/tlsn-js';
 
 import { Input } from '../../components/Table/table';
 import RemoteAttestationBadge from '../../components/RemoteAttestationBadge';
+import NavButton from '../../components/NavButton';
+import Search from '../../components/SvgIcons/Search';
+import { useNavigate } from 'react-router';
+import { useUniqueRequests } from '../../reducers/requests';
 // import { version } from '../../../package.json';
 
 export default function Options(): ReactElement {
@@ -47,6 +51,8 @@ export default function Options(): ReactElement {
   const [shouldReload, setShouldReload] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [showReloadModal, setShowReloadModal] = useState(false);
+  const navigate = useNavigate();
+  const requests = useUniqueRequests();
 
   useEffect(() => {
     (async () => {
@@ -113,6 +119,13 @@ export default function Options(): ReactElement {
           </div>
         </Modal>
       )}
+
+      <NavButton
+        ImageIcon={<Search />}
+        title="Search requests"
+        subtitle={`Search previous ${requests.length} requests`}
+        onClick={() => navigate('/requests')}
+      />
 
       <NormalOptions
         notary={notary}

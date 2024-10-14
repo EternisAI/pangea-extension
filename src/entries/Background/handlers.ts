@@ -100,6 +100,7 @@ export const onBeforeRequest = (
 export const handleNotarization = (
   details: browser.WebRequest.OnCompletedDetailsType,
 ) => {
+  console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
     const storage = await chrome.storage.sync.get('enable-extension');
     const isEnabled = storage['enable-extension'];
@@ -123,6 +124,12 @@ export const handleNotarization = (
     const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
     if (lastNotaryRequest && !bookmark.toNotarize) {
       const timeDiff = Date.now() - lastNotaryRequest.timestamp;
+      console.log(
+        '🟢 timeDiff',
+        timeDiff,
+        lastNotaryRequest.timestamp,
+        Date.now(),
+      );
       if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
         //console.log('🟢 timediff not ok');
         return;
