@@ -347,7 +347,7 @@ export const makePlugin = async (
 
   const pluginConfig: ExtismPluginOptions = {
     useWasi: true,
-    config: injectedConfig,
+    config: injectedConfig as any,
     // allowedHosts: approvedRequests.map((r) => urlify(r.url)?.origin),
     functions: {
       'extism:host/user': funcs,
@@ -504,4 +504,18 @@ export async function getNotaryConfig() {
   });
   const config: NotaryConfig = await res.json();
   return config;
+}
+
+export function urlToRegex(url: string): string {
+  // Escape special regex characters
+  const escapedUrl = url.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&');
+
+  // Replace dynamic segments (e.g., numeric IDs)
+  // Here we assume segments like '12345' are numeric
+  const regexPattern = escapedUrl.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
+
+  // Allow for optional query strings
+  const finalPattern = `^${regexPattern}(\\?.*)?$`;
+
+  return finalPattern;
 }

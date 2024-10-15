@@ -13,6 +13,7 @@ import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
 import browser from 'webextension-polyfill';
 import { useDevMode } from '../../reducers/requests';
+import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -100,6 +101,23 @@ export function AttestationCard({
   const closeAllModal = useCallback(() => {
     showError(false);
   }, [showingError, showError]);
+
+  const copyRequest = useCallback(() => {
+    const request_ = {
+      id: '',
+      host: extractHostFromUrl(request?.url || ''),
+      urlRegex: urlToRegex(request?.url || ''),
+      targetUrl: '',
+      method: request?.method,
+      title: '',
+      description: '',
+      icon: '',
+      responseType: '',
+      actionSelectors: [],
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(request_));
+  }, [request]);
 
   function ErrorModal(): ReactElement {
     const msg = typeof request?.error === 'string' && request?.error;
@@ -246,9 +264,7 @@ export function AttestationCard({
 
               {devMode && (
                 <div
-                  onClick={() => {
-                    navigator.clipboard.writeText(JSON.stringify(request));
-                  }}
+                  onClick={copyRequest}
                   className="ml-3 cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#e2e3e8] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
                 >
                   Copy request
