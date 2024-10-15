@@ -65,7 +65,7 @@ const Offscreen = () => {
               try {
                 await init({ loggingLevel });
               } catch (error) {
-                console.error('wasm aready init');
+                console.log('wasm aready init');
               }
               const result = await verify_attestation(
                 remoteAttestation,
