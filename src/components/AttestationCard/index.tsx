@@ -4,14 +4,13 @@ import { useNavigate, useLocation } from 'react-router';
 import { download, urlify } from '../../utils/misc';
 import { useRequestHistory } from '../../reducers/history';
 import { deleteRequestHistory } from '../../reducers/history';
-import { getNotaryApi, getProxyApi, DEV_MODE_KEY } from '../../utils/storage';
+import { getNotaryApi, getProxyApi } from '../../utils/storage';
 import { BackgroundActiontype } from '../../entries/Background/rpc';
 import { parseAttributeFromRequest } from '../../utils/misc';
 import Modal, { ModalContent } from '../Modal/Modal';
 import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
-import browser, { bookmarks } from 'webextension-polyfill';
 import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
 import { useBookmarks } from '../../reducers/bookmarks';
@@ -152,12 +151,12 @@ export function AttestationCard({
     );
   }
 
-  const { attributes, signedSessionDecoded } = parseAttributeFromRequest(
+  const { attributes } = parseAttributeFromRequest(
     request?.proof as AttrAttestation,
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" key={requestId}>
       <ErrorModal />
       {showDate && date && (
         <div className="text-sm font-bold mb-2 leading-5">{date}</div>
