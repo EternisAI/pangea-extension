@@ -38,12 +38,6 @@ export default function RequestDetail(props: Props): ReactElement {
   const request = useRequest(props.requestId);
   const navigate = useNavigate();
 
-  const notarize2 = useCallback(async () => {
-    if (!request) return;
-
-    navigate('/notary/' + request.requestId);
-  }, [request, props.requestId]);
-
   const dispatch = useDispatch();
 
   const notarize = useCallback(async () => {
