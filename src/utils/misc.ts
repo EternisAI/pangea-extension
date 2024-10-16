@@ -515,7 +515,7 @@ export function urlToRegex(url: string): string {
   const regexPattern = escapedUrl.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
 
   // Allow for optional query strings
-  const finalPattern = `^${regexPattern}(\\?.*)?$`;
+  const finalPattern = `^${regexPattern}.*$`;
 
   return finalPattern;
 }
