@@ -508,14 +508,16 @@ export async function getNotaryConfig() {
 
 export function urlToRegex(url: string): string {
   // Escape special regex characters
-  const escapedUrl = url.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&');
+  let regexPattern = url.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&');
 
   // Replace dynamic segments (e.g., numeric IDs)
   // Here we assume segments like '12345' are numeric
-  const regexPattern = escapedUrl.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
+  regexPattern = regexPattern.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
 
+  // Remove query string if present
+  regexPattern = regexPattern.split('?')[0];
   // Allow for optional query strings
-  const finalPattern = `^${regexPattern}.*$`;
+  regexPattern = `^${regexPattern}.*$`;
 
-  return finalPattern;
+  return regexPattern;
 }
