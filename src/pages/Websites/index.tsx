@@ -80,11 +80,8 @@ export default function Websites({
           })}
         {!onlyFavorites && bookmarks?.length && (
           <>
-            <div className="text-sm font-bold mt-3">Popular</div>
-
             {bookmarks
               .filter((bookmark) => {
-                console.log('bookmark', bookmark);
                 if (
                   websites.find(({ host }) => host === bookmark.host) &&
                   favorites.hasOwnProperty(bookmark.host ?? '')
@@ -98,9 +95,9 @@ export default function Websites({
                 <NavButton
                   ImageIcon={
                     bookmark.icon ? (
-                      <img src={bookmark.icon} className="w-4 h-4" />
+                      <img src={bookmark.icon} className="w-6 h-6" />
                     ) : (
-                      <div className="w-4 h-4 bg-transparent rounded-sm" />
+                      <div className="w-5 h-5 bg-transparent rounded-sm" />
                     )
                   }
                   title={bookmark.title}
