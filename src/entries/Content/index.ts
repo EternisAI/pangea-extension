@@ -30,6 +30,8 @@ console.log = function (...args) {
   );
 
   server.on(ContentScriptTypes.connect, async () => {
+    console.log('ContentScriptTypes connect');
+
     const connected = await browser.runtime.sendMessage({
       type: BackgroundActiontype.connect_request,
       data: {
@@ -56,7 +58,7 @@ console.log = function (...args) {
         url: filterUrl,
         metadata,
       } = request.params || {};
-
+      console.log('ContentScriptTypes get_history');
       if (!filterMethod || !filterUrl)
         throw new Error('params must include method and url.');
 
@@ -136,80 +138,80 @@ console.log = function (...args) {
     },
   );
 
-  server.on(
-    ContentScriptTypes.install_plugin,
-    async (
-      request: ContentScriptRequest<{
-        url: string;
-        metadata?: { [k: string]: string };
-      }>,
-    ) => {
-      const { url, metadata } = request.params || {};
+  // server.on(
+  //   ContentScriptTypes.install_plugin,
+  //   async (
+  //     request: ContentScriptRequest<{
+  //       url: string;
+  //       metadata?: { [k: string]: string };
+  //     }>,
+  //   ) => {
+  //     const { url, metadata } = request.params || {};
 
-      if (!url) throw new Error('params must include url.');
+  //     if (!url) throw new Error('params must include url.');
 
-      const response: RequestHistory[] = await browser.runtime.sendMessage({
-        type: BackgroundActiontype.install_plugin_request,
-        data: {
-          ...getPopupData(),
-          url,
-          metadata,
-        },
-      });
+  //     const response: RequestHistory[] = await browser.runtime.sendMessage({
+  //       type: BackgroundActiontype.install_plugin_request,
+  //       data: {
+  //         ...getPopupData(),
+  //         url,
+  //         metadata,
+  //       },
+  //     });
 
-      return response;
-    },
-  );
+  //     return response;
+  //   },
+  // );
 
-  server.on(
-    ContentScriptTypes.get_plugins,
-    async (
-      request: ContentScriptRequest<{
-        url: string;
-        origin?: string;
-        metadata?: { [k: string]: string };
-      }>,
-    ) => {
-      const {
-        url: filterUrl,
-        origin: filterOrigin,
-        metadata,
-      } = request.params || {};
+  // server.on(
+  //   ContentScriptTypes.get_plugins,
+  //   async (
+  //     request: ContentScriptRequest<{
+  //       url: string;
+  //       origin?: string;
+  //       metadata?: { [k: string]: string };
+  //     }>,
+  //   ) => {
+  //     const {
+  //       url: filterUrl,
+  //       origin: filterOrigin,
+  //       metadata,
+  //     } = request.params || {};
 
-      if (!filterUrl) throw new Error('params must include url.');
+  //     if (!filterUrl) throw new Error('params must include url.');
 
-      const response = await browser.runtime.sendMessage({
-        type: BackgroundActiontype.get_plugins_request,
-        data: {
-          ...getPopupData(),
-          url: filterUrl,
-          origin: filterOrigin,
-          metadata,
-        },
-      });
+  //     const response = await browser.runtime.sendMessage({
+  //       type: BackgroundActiontype.get_plugins_request,
+  //       data: {
+  //         ...getPopupData(),
+  //         url: filterUrl,
+  //         origin: filterOrigin,
+  //         metadata,
+  //       },
+  //     });
 
-      return response;
-    },
-  );
+  //     return response;
+  //   },
+  // );
 
-  server.on(
-    ContentScriptTypes.run_plugin,
-    async (request: ContentScriptRequest<{ hash: string }>) => {
-      const { hash } = request.params || {};
+  // server.on(
+  //   ContentScriptTypes.run_plugin,
+  //   async (request: ContentScriptRequest<{ hash: string }>) => {
+  //     const { hash } = request.params || {};
 
-      if (!hash) throw new Error('params must include hash');
+  //     if (!hash) throw new Error('params must include hash');
 
-      const response = await browser.runtime.sendMessage({
-        type: BackgroundActiontype.run_plugin_request,
-        data: {
-          ...getPopupData(),
-          hash,
-        },
-      });
+  //     const response = await browser.runtime.sendMessage({
+  //       type: BackgroundActiontype.run_plugin_request,
+  //       data: {
+  //         ...getPopupData(),
+  //         hash,
+  //       },
+  //     });
 
-      return response;
-    },
-  );
+  //     return response;
+  //   },
+  // );
 })();
 
 function loadScript(filename: string) {
