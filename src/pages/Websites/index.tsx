@@ -4,7 +4,11 @@ import NavButton from '../../components/NavButton';
 import FavouriteStar from '../../components/SvgIcons/FavouriteStar';
 import { useAllWebsites } from '../../reducers/history';
 import { Favorite, FavoritesManager } from '../../reducers/favorites';
-import { Bookmark, BookmarkManager } from '../../reducers/bookmarks';
+import {
+  Bookmark,
+  BookmarkManager,
+  useBookmarks,
+} from '../../reducers/bookmarks';
 import { extractHostFromUrl, extractPathFromUrl } from '../../utils/misc';
 
 const favoritesManager = new FavoritesManager();
@@ -16,19 +20,10 @@ export default function Websites({
   onlyFavorites?: boolean;
 }) {
   const [favorites, setFavorites] = useState<Record<string, Favorite>>({});
-  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [bookmarks, setBookmarks] = useBookmarks();
 
   const navigate = useNavigate();
   const websites = useAllWebsites();
-
-  const fetchBookmarks = useCallback(async () => {
-    const bookmarks = await bookmarkManager.getBookmarks();
-    setBookmarks(bookmarks);
-  }, []);
-
-  useEffect(() => {
-    fetchBookmarks();
-  }, []);
 
   const emptyContainer =
     websites.filter(({ host }) => favorites.hasOwnProperty(host)).length === 0;
