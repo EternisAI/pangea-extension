@@ -104,9 +104,6 @@ console.log = function (...args) {
         body?: string;
         notaryUrl?: string;
         websocketProxyUrl?: string;
-        maxSentData?: number;
-        maxRecvData?: number;
-        maxTranscriptSize?: number;
       }>,
     ) => {
       const {
@@ -114,9 +111,6 @@ console.log = function (...args) {
         method,
         headers,
         body,
-        maxSentData,
-        maxRecvData,
-        maxTranscriptSize,
         notaryUrl,
         websocketProxyUrl,
         metadata,
@@ -132,9 +126,6 @@ console.log = function (...args) {
           method,
           headers,
           body,
-          maxSentData,
-          maxRecvData,
-          maxTranscriptSize,
           notaryUrl,
           websocketProxyUrl,
           metadata,

@@ -52,8 +52,7 @@ export default function RequestDetail(props: Props): ReactElement {
     const hostname = urlify(req.url)?.hostname;
     const notaryUrl = await getNotaryApi();
     const websocketProxyUrl = await getProxyApi();
-    const maxSentData = await getMaxSent();
-    const maxRecvData = await getMaxRecv();
+
     const headers: { [k: string]: string } = req.requestHeaders.reduce(
       (acc: any, h) => {
         acc[h.name] = h.value;
@@ -74,13 +73,8 @@ export default function RequestDetail(props: Props): ReactElement {
         method: req.method,
         headers,
         body: req.requestBody,
-        maxSentData,
-        maxRecvData,
-        maxTranscriptSize: 0,
         notaryUrl,
         websocketProxyUrl,
-        secretHeaders: [],
-        secretResps: [],
         type: req.type,
       }),
     );
