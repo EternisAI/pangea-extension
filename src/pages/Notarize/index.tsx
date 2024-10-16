@@ -381,7 +381,7 @@ function HideResponseStep(props: {
       </div>
       <div className="flex flex-row justify-end p-2 gap-2 border-t">
         <button className="button" onClick={props.onCancel}>
-          Back
+          Backz
         </button>
         <button
           className={
