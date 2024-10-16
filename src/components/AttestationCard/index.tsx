@@ -106,12 +106,14 @@ export function AttestationCard({
     showError(false);
   }, [showingError, showError]);
 
-  const copyRequest = useCallback(() => {
+  const copyRequest = useCallback(async () => {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const currentTabUrl = tabs[0]?.url || '';
     const request_ = {
       id: bookmarks.length + 1,
       host: extractHostFromUrl(request?.url || ''),
       urlRegex: urlToRegex(request?.url || ''),
-      targetUrl: '',
+      targetUrl: currentTabUrl,
       method: request?.method,
       title: '',
       description: '',
