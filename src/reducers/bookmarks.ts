@@ -5,6 +5,7 @@ import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
 import { getCacheByTabId } from '../entries/Background/cache';
 import { Provider } from '../utils/types';
 import { urlToRegex } from '../utils/misc';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 export type Bookmark = {
   id?: string;
@@ -145,6 +146,11 @@ export class BookmarkManager {
     return bookmarks.filter((bookmark) => bookmark !== null) as Bookmark[];
   }
 
+  async getBookmarksLength(): Promise<number> {
+    const bookmarks = await this.getBookmarks();
+    return bookmarks.length;
+  }
+
   async deleteBookmark(bookmark: Bookmark): Promise<void> {
     await chrome.storage.sync.remove([bookmark.id || '']);
   }
@@ -210,3 +216,18 @@ export class BookmarkManager {
     return bookmark;
   }
 }
+
+export const useBookmarks = (): [
+  Bookmark[],
+  Dispatch<SetStateAction<Bookmark[]>>,
+] => {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+
+  const bookmarkManager = new BookmarkManager();
+  useEffect(() => {
+    (async () => {
+      setBookmarks(await bookmarkManager.getBookmarks());
+    })();
+  }, []);
+  return [bookmarks, setBookmarks];
+};

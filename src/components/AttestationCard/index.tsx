@@ -11,9 +11,10 @@ import Modal, { ModalContent } from '../Modal/Modal';
 import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
-import browser from 'webextension-polyfill';
+import browser, { bookmarks } from 'webextension-polyfill';
 import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
+import { useBookmarks } from '../../reducers/bookmarks';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -71,7 +72,10 @@ export function AttestationCard({
   const location = useLocation();
   const requestUrl = urlify(request?.url || '');
   const date = formatAttestationDate(requestId, previousRequestId);
-  const [devMode, _] = useDevMode();
+  const [bookmarks] = useBookmarks();
+  const [devMode] = useDevMode();
+
+  console.log('bookmarks', bookmarks);
 
   const { status } = request || {};
 
@@ -104,7 +108,7 @@ export function AttestationCard({
 
   const copyRequest = useCallback(() => {
     const request_ = {
-      id: '',
+      id: bookmarks.length + 1,
       host: extractHostFromUrl(request?.url || ''),
       urlRegex: urlToRegex(request?.url || ''),
       targetUrl: '',
@@ -116,8 +120,8 @@ export function AttestationCard({
       actionSelectors: [],
     };
 
-    navigator.clipboard.writeText(JSON.stringify(request_));
-  }, [request]);
+    navigator.clipboard.writeText(JSON.stringify(request_, null, 2));
+  }, [request, bookmarks]);
 
   function ErrorModal(): ReactElement {
     const msg = typeof request?.error === 'string' && request?.error;
