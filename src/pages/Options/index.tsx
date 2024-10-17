@@ -134,7 +134,7 @@ export default function Options(): ReactElement {
         <NavButton
           ImageIcon={<Search />}
           title="Search requests"
-          subtitle={`Search previous ${requests.length} requests`}
+          subtitle={`${requests.length} recent requests`}
           onClick={() => navigate('/requests')}
         />
       </div>
@@ -190,7 +190,7 @@ export default function Options(): ReactElement {
           Save Changes
         </button>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-auto py-4">
         <RemoteAttestationBadge />
       </div>
     </div>
@@ -208,7 +208,7 @@ function InputField(props: {
   const { label, placeholder, value, type, min, onChange } = props;
 
   return (
-    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
+    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 mt-3 b-1">
       <div className="text-sm font-semibold cursor-default">{label}</div>
 
       <Input
