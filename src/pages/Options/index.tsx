@@ -166,7 +166,7 @@ export default function Options(): ReactElement {
       {!advanced ? (
         <></>
       ) : (
-        <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
+        <div className="flex flex-col w-full p-2">
           <AdvancedOptions
             maxSent={maxSent}
             setMaxSent={setMaxSent}
