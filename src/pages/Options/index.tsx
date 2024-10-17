@@ -134,7 +134,7 @@ export default function Options(): ReactElement {
         <NavButton
           ImageIcon={<Search />}
           title="Search requests"
-          subtitle={`Search previous ${requests.length} requests`}
+          subtitle={`${requests.length} recent requests`}
           onClick={() => navigate('/requests')}
         />
       </div>
@@ -148,7 +148,7 @@ export default function Options(): ReactElement {
         toggleDevMode={toggleDevMode}
         devMode={devMode}
       />
-      <div className="justify-left px-2 pt-3 gap-2">
+      <div className="flex justify-center   gap-2">
         <button
           className="cursor-pointer  hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
           onClick={onAdvanced}
@@ -166,29 +166,31 @@ export default function Options(): ReactElement {
       {!advanced ? (
         <></>
       ) : (
-        <AdvancedOptions
-          maxSent={maxSent}
-          setMaxSent={setMaxSent}
-          maxReceived={maxReceived}
-          setMaxReceived={setMaxReceived}
-          setDirty={setDirty}
-          loggingLevel={loggingLevel}
-          setLoggingLevel={setLoggingLevel}
-          setShouldReload={setShouldReload}
-          setNotary={setNotary}
-          setProxy={setProxy}
-        />
+        <div className="flex flex-col w-full p-2">
+          <AdvancedOptions
+            maxSent={maxSent}
+            setMaxSent={setMaxSent}
+            maxReceived={maxReceived}
+            setMaxReceived={setMaxReceived}
+            setDirty={setDirty}
+            loggingLevel={loggingLevel}
+            setLoggingLevel={setLoggingLevel}
+            setShouldReload={setShouldReload}
+            setNotary={setNotary}
+            setProxy={setProxy}
+          />
+        </div>
       )}
       <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
         <button
-          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
+          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center w-full"
           disabled={!dirty}
           onClick={onSave}
         >
-          Save
+          Save Changes
         </button>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-auto py-4">
         <RemoteAttestationBadge />
       </div>
     </div>
@@ -206,7 +208,7 @@ function InputField(props: {
   const { label, placeholder, value, type, min, onChange } = props;
 
   return (
-    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
+    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 mt-3 b-1">
       <div className="text-sm font-semibold cursor-default">{label}</div>
 
       <Input

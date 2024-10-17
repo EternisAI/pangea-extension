@@ -7,6 +7,17 @@ export type ProofV0 = {
   notaryUrl: string;
 };
 
+export type NotaryRequest = {
+  url: string;
+  method: string;
+  headers: Record<string, string>;
+  body?: string;
+  notaryUrl: string;
+  websocketProxyUrl: string;
+  timestamp: number;
+  type: string;
+};
+
 export type AttrAttestation = {
   version: '1.0';
   meta: {

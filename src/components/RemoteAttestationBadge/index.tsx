@@ -24,7 +24,7 @@ export default function RemoteAttestationBadge(): ReactElement {
                 className="w-5 h-5 mr-2 text-green-500"
                 aria-hidden="true"
               />
-              <span className="text-base font-medium text-green-500">
+              <span className="text-xs font-small text-green-500">
                 Connection is secure
               </span>
             </div>

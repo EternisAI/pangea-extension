@@ -4,6 +4,8 @@ import { sha256, getNotaryConfig } from '../utils/misc';
 import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
 import { getCacheByTabId } from '../entries/Background/cache';
 import { Provider } from '../utils/types';
+import { urlToRegex } from '../utils/misc';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
 
 export type Bookmark = {
   id?: string;
@@ -144,6 +146,11 @@ export class BookmarkManager {
     return bookmarks.filter((bookmark) => bookmark !== null) as Bookmark[];
   }
 
+  async getBookmarksLength(): Promise<number> {
+    const bookmarks = await this.getBookmarks();
+    return bookmarks.length;
+  }
+
   async deleteBookmark(bookmark: Bookmark): Promise<void> {
     await chrome.storage.sync.remove([bookmark.id || '']);
   }
@@ -192,27 +199,13 @@ export class BookmarkManager {
     });
   }
 
-  urlToRegex(url: string): string {
-    // Escape special regex characters
-    const escapedUrl = url.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&');
-
-    // Replace dynamic segments (e.g., numeric IDs)
-    // Here we assume segments like '12345' are numeric
-    const regexPattern = escapedUrl.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
-
-    // Allow for optional query strings
-    const finalPattern = `^${regexPattern}(\\?.*)?$`;
-
-    return finalPattern;
-  }
-
   async convertRequestToBookmark(request: RequestHistory) {
     const currentTabInfo = await this.getCurrentTabInfo();
 
     const bookmark: Bookmark = {
       requestId: request.id,
       id: await sha256(request?.url || ''),
-      urlRegex: new RegExp(this.urlToRegex(request?.url || '')).toString(), // this conversion should be improved
+      urlRegex: new RegExp(urlToRegex(request?.url || '')).toString(), // this conversion should be improved
       targetUrl: currentTabInfo?.url || '',
       method: request?.method || '',
       type: request?.type || '',
@@ -223,3 +216,18 @@ export class BookmarkManager {
     return bookmark;
   }
 }
+
+export const useBookmarks = (): [
+  Bookmark[],
+  Dispatch<SetStateAction<Bookmark[]>>,
+] => {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+
+  const bookmarkManager = new BookmarkManager();
+  useEffect(() => {
+    (async () => {
+      setBookmarks(await bookmarkManager.getBookmarks());
+    })();
+  }, []);
+  return [bookmarks, setBookmarks];
+};

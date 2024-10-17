@@ -169,9 +169,6 @@ export default function RequestBuilder(props?: {
   }, [href, method, headers, body, type]);
 
   const onNotarize = useCallback(async () => {
-    const maxSentData = await getMaxSent();
-    const maxRecvData = await getMaxRecv();
-
     const notaryUrl = await getNotaryApi();
     const websocketProxyUrl = await getProxyApi();
 
@@ -188,11 +185,6 @@ export default function RequestBuilder(props?: {
             return map;
           }, {}),
           body: body ? formatForRequest(body, type) : '',
-          maxSentData,
-          maxRecvData,
-          secretHeaders: [],
-          secretResps: [],
-          maxTranscriptSize: 0,
           notaryUrl,
           websocketProxyUrl,
         },
