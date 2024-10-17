@@ -46,6 +46,7 @@ import { OffscreenActionTypes } from '../Offscreen/types';
 
 const charwise = require('charwise');
 import { AttrAttestation } from '../../utils/types';
+import { BookmarkManager } from '../../reducers/bookmarks';
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
@@ -84,6 +85,8 @@ export enum BackgroundActiontype {
   run_plugin_request = 'run_plugin_request',
   run_plugin_response = 'run_plugin_response',
   get_logging_level = 'get_logging_level',
+  prepare_notarization = 'prepare_notarization',
+  get_notarization_status = 'get_notarization_status',
 }
 
 export type BackgroundAction = {
@@ -115,9 +118,6 @@ export type RequestHistory = {
   method: string;
   headers: { [key: string]: string };
   body?: string;
-  maxTranscriptSize: number;
-  maxSentData: number;
-  maxRecvData: number;
   notaryUrl: string;
   websocketProxyUrl: string;
   status: '' | 'pending' | 'success' | 'error';
@@ -128,8 +128,6 @@ export type RequestHistory = {
     sent: string;
     recv: string;
   };
-  secretHeaders?: string[];
-  secretResps?: string[];
   cid?: string;
   metadata?: {
     [k: string]: string;
@@ -193,7 +191,8 @@ export const initRPC = () => {
         case BackgroundActiontype.get_logging_level:
           getLoggingFilter().then(sendResponse);
           return true;
-        default:
+        case BackgroundActiontype.get_notarization_status:
+          return handleGetNotarizationStatus(request);
           break;
       }
     },
@@ -322,13 +321,8 @@ export async function handleProveRequestStart(
     method,
     headers,
     body,
-    maxTranscriptSize,
-    maxSentData,
-    maxRecvData,
     notaryUrl,
     websocketProxyUrl,
-    secretHeaders,
-    secretResps,
   } = request.data;
 
   const { id } = await addNotaryRequest(Date.now(), {
@@ -338,13 +332,8 @@ export async function handleProveRequestStart(
     method,
     headers,
     body,
-    maxSentData,
-    maxRecvData,
-    maxTranscriptSize,
     notaryUrl,
     websocketProxyUrl,
-    secretHeaders,
-    secretResps,
     timestamp: Date.now(),
   });
 
@@ -366,13 +355,8 @@ export async function handleProveRequestStart(
       method,
       headers,
       body,
-      maxTranscriptSize,
-      maxSentData,
-      maxRecvData,
       notaryUrl,
       websocketProxyUrl,
-      secretHeaders,
-      secretResps,
     },
   });
 
@@ -394,22 +378,14 @@ async function runPluginProver(request: BackgroundAction, now = Date.now()) {
   } = request.data;
   const notaryUrl = _notaryUrl || (await getNotaryApi());
   const websocketProxyUrl = _websocketProxyUrl || (await getProxyApi());
-  const maxSentData = _maxSentData || (await getMaxSent());
-  const maxRecvData = _maxRecvData || (await getMaxRecv());
-  const maxTranscriptSize = 16384;
 
   const { id } = await addNotaryRequest(now, {
     url,
     method,
     headers,
     body,
-    maxTranscriptSize,
     notaryUrl,
     websocketProxyUrl,
-    maxRecvData,
-    maxSentData,
-    secretHeaders,
-    secretResps,
     timestamp: now,
   });
 
@@ -431,13 +407,8 @@ async function runPluginProver(request: BackgroundAction, now = Date.now()) {
       method,
       headers,
       body,
-      maxTranscriptSize,
       notaryUrl,
       websocketProxyUrl,
-      maxRecvData,
-      maxSentData,
-      secretHeaders,
-      secretResps,
     },
   });
 }
@@ -663,6 +634,20 @@ async function handleConnect(request: BackgroundAction) {
   return true;
 }
 
+async function handleGetNotarizationStatus(request: BackgroundAction) {
+  const { tab_host } = request.data;
+
+  console.log('tab_url', tab_host);
+
+  const bookmarkManager = new BookmarkManager();
+  const bookmarks = await bookmarkManager.getBookmarks();
+
+  return bookmarks.filter(
+    (bookmark) =>
+      bookmark.targetUrl.includes(tab_host) && bookmark.toNotarize === true,
+  )[0];
+}
+
 async function handleGetHistory(request: BackgroundAction) {
   const [currentTab] = await browser.tabs.query({
     active: true,
@@ -804,9 +789,6 @@ async function handleNotarizeRequest(request: BackgroundAction) {
     method = 'GET',
     headers,
     body,
-    maxSentData = await getMaxSent(),
-    maxRecvData = await getMaxRecv(),
-    maxTranscriptSize,
     notaryUrl = await getNotaryApi(),
     websocketProxyUrl = await getProxyApi(),
     origin,
@@ -819,9 +801,6 @@ async function handleNotarizeRequest(request: BackgroundAction) {
     method,
     headers,
     body,
-    maxSentData,
-    maxRecvData,
-    maxTranscriptSize,
     notaryUrl,
     websocketProxyUrl,
     metadata,
@@ -864,13 +843,8 @@ async function handleNotarizeRequest(request: BackgroundAction) {
               method,
               headers,
               body,
-              maxTranscriptSize,
-              maxSentData,
-              maxRecvData,
               notaryUrl,
               websocketProxyUrl,
-              secretHeaders,
-              secretResps,
             },
           });
         } catch (e) {

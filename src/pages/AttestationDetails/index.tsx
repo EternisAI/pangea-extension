@@ -17,6 +17,7 @@ import { AttrAttestation } from '../../utils/types';
 import { CheckCircle } from 'lucide-react';
 import { Identity } from '@semaphore-protocol/identity';
 import { useIdentity } from '../../reducers/identity';
+import { VERIFIER_APP_URL } from '../../utils/constants';
 
 export default function AttestationDetails() {
   const [identity] = useIdentity();
@@ -45,10 +46,51 @@ export default function AttestationDetails() {
     setSessionData(signedSessionDecoded?.response || '');
   }, [request]);
 
+  const copyAttestation = () => {
+    const text = JSON.stringify(request?.proof);
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard');
+  };
+
+  const downloadAttestation = () => {
+    if (!request) return;
+    download(request.id, JSON.stringify(request.proof));
+  };
+
+  const copyAndVerify = async () => {
+    const text = JSON.stringify(request?.proof);
+    navigator.clipboard.writeText(text);
+    alert('Copied to clipboard');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    window.open(VERIFIER_APP_URL, '_blank');
+  };
   if (!attributeAttestation) return <>ahi</>;
   return (
     <div className="flex flex-col gap-4 py-4 overflow-y-auto flex-1">
       <div className="flex flex-col flex-nowrap justify-center gap-2 mx-4">
+        <div className="flex mt-4">
+          <div
+            onClick={copyAttestation}
+            className="flex-1 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
+          >
+            Copy
+          </div>
+
+          <div
+            onClick={downloadAttestation}
+            className="flex-1 ml-2 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
+          >
+            Download
+          </div>
+
+          <div
+            onClick={copyAndVerify}
+            className="flex-1 ml-2 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
+          >
+            Verify
+          </div>
+        </div>
+
         <div className="p-4 border border-[#E4E6EA] bg-white rounded-xl flex flex-col">
           <div className="flex flex-row items-center">
             <div className="flex-1 font-bold text-[#4B5563] text-lg truncate">
@@ -87,29 +129,6 @@ export default function AttestationDetails() {
               attributes={attributes}
               sessionData={sessionData}
             />
-          </div>
-
-          <div className="flex mt-4">
-            <div
-              onClick={() => {
-                const text = JSON.stringify(request?.proof);
-                navigator.clipboard.writeText(text);
-                alert('Copied to clipboard');
-              }}
-              className="flex-1 text-center cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
-            >
-              Copy
-            </div>
-
-            <div
-              onClick={() => {
-                if (!request) return;
-                download(request.id, JSON.stringify(request.proof));
-              }}
-              className="flex-1 ml-2 text-center cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
-            >
-              Download
-            </div>
           </div>
         </div>
       </div>

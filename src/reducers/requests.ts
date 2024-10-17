@@ -5,17 +5,13 @@ import {
 import { useSelector } from 'react-redux';
 import { AppRootState } from './index';
 import deepEqual from 'fast-deep-equal';
-import {
-  getNotaryApi,
-  getProxyApi,
-  getMaxSent,
-  getMaxRecv,
-} from '../utils/storage';
+import { getNotaryApi, getProxyApi } from '../utils/storage';
+import { NotaryRequest } from '../utils/types';
 import { BackgroundActiontype } from '../entries/Background/rpc';
 import browser from 'webextension-polyfill';
 import { useState, useEffect } from 'react';
 import { Dispatch, SetStateAction } from 'react';
-
+import { getBoolean, EXTENSION_ENABLED, DEV_MODE_KEY } from '../utils/storage';
 enum ActionType {
   '/requests/setRequests' = '/requests/setRequests',
   '/requests/addRequest' = '/requests/addRequest',
@@ -48,12 +44,10 @@ export const setRequests = (requests: RequestLog[]): Action<RequestLog[]> => ({
   payload: requests,
 });
 
-export const notarizeRequest = (options: RequestHistory) => async () => {
+export const notarizeRequest = (options: NotaryRequest) => async () => {
   console.log('notarizeRequest', options);
   const notaryUrl = await getNotaryApi();
   const websocketProxyUrl = await getProxyApi();
-  const maxSentData = await getMaxSent();
-  const maxRecvData = await getMaxRecv();
 
   chrome.runtime.sendMessage<any, string>({
     type: BackgroundActiontype.prove_request_start,
@@ -62,11 +56,6 @@ export const notarizeRequest = (options: RequestHistory) => async () => {
       method: options.method,
       headers: options.headers,
       body: options.body,
-      maxTranscriptSize: options.maxTranscriptSize,
-      maxSentData,
-      maxRecvData,
-      secretHeaders: options.secretHeaders,
-      secretResps: options.secretResps,
       notaryUrl,
       websocketProxyUrl,
       type: options.type,
@@ -179,13 +168,23 @@ export const useExtensionEnabled = (): [
   const [isEnabled, setIsEnabled] = useState(false);
   useEffect(() => {
     (async () => {
-      const storage = await chrome.storage.sync.get('enable-extension');
-      const isEnabled = storage['enable-extension'];
+      const storage = await chrome.storage.sync.get(EXTENSION_ENABLED);
+      const isEnabled = storage[EXTENSION_ENABLED];
       if (isEnabled === undefined) {
         setIsEnabled(true);
-        chrome.storage.sync.set({ 'enable-extension': true });
+        chrome.storage.sync.set({ [EXTENSION_ENABLED]: true });
       } else setIsEnabled(isEnabled);
     })();
   }, []);
   return [isEnabled, setIsEnabled];
+};
+
+export const useDevMode = (): [boolean, Dispatch<SetStateAction<boolean>>] => {
+  const [devMode, setDevMode] = useState(false);
+  useEffect(() => {
+    (async () => {
+      setDevMode(await getBoolean(DEV_MODE_KEY));
+    })();
+  }, []);
+  return [devMode, setDevMode];
 };

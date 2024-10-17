@@ -1,3 +1,5 @@
+import { TargetPage } from './types';
+
 export const EXPLORER_API = 'https://explorer.tlsnotary.org';
 export const MAX_RECV = 16384;
 export const MAX_SENT = 4096;
@@ -21,9 +23,11 @@ export const EXPECTED_PCRS_DEBUG = {
 };
 
 // 1 second buffer time to prevent spamming of requests
-export const NOTARIZATION_BUFFER_TIME = 5000;
+export const NOTARIZATION_BUFFER_TIME = 60 * 60 * 24; // seconds
 
 export const DEFAULT_CONFIG_ENDPOINT =
-  'https://eternis-extension-providers.s3.amazonaws.com/default-config-73690c4405adceb15942d1aa9452b4231ea3771c.json';
+  'https://eternis-extension-providers.s3.amazonaws.com/default-config-048765dc7dca53ad.json';
 
-export const CONFIG_CACHE_AGE = 600; // 10 minutes
+export const CONFIG_CACHE_AGE = 600; // seconds
+
+export const VERIFIER_APP_URL = 'https://verifier.eternis.ai/';

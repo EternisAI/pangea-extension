@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { useExtensionEnabled } from '../../reducers/requests';
 import Icon from '../Icon';
-import { set } from '../../utils/storage';
+import { set, EXTENSION_ENABLED } from '../../utils/storage';
 export default function ToggleExtensionButton(): ReactElement {
   return (
     <div className="absolute right-2 flex flex-nowrap flex-row items-center gap-1 justify-center w-fit cursor-pointer">
@@ -25,7 +25,7 @@ export function SimpleToggle({ onToggle }: { onToggle: () => void }) {
   const toggle = () => {
     setIsEnabled(!isOn);
     onToggle();
-    chrome.storage.sync.set({ 'enable-extension': !isOn });
+    set(EXTENSION_ENABLED, !isOn);
   };
 
   if (isOn === null) {

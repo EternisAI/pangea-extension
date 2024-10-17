@@ -21,7 +21,12 @@ import {
   NOTARIZATION_BUFFER_TIME,
 } from '../../utils/constants';
 import { Bookmark, BookmarkManager } from '../../reducers/bookmarks';
-import { get, NOTARY_API_LS_KEY, PROXY_API_LS_KEY } from '../../utils/storage';
+import {
+  get,
+  NOTARY_API_LS_KEY,
+  PROXY_API_LS_KEY,
+  EXTENSION_ENABLED,
+} from '../../utils/storage';
 
 export const onSendHeaders = (
   details: browser.WebRequest.OnSendHeadersDetailsType,
@@ -100,37 +105,36 @@ export const onBeforeRequest = (
 export const handleNotarization = (
   details: browser.WebRequest.OnCompletedDetailsType,
 ) => {
+  console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
-    const storage = await chrome.storage.sync.get('enable-extension');
-    const isEnabled = storage['enable-extension'];
+    const isEnabled = await get(EXTENSION_ENABLED);
     if (!isEnabled) return;
 
     const { tabId, requestId, frameId, url, method, type } = details;
     const cache = getCacheByTabId(tabId);
 
+    //console.log('🟢 intercepted request', url);
     if (tabId === -1 || frameId === -1) return;
 
     const req = cache.get<RequestLog>(requestId);
     if (!req) return;
 
+    //console.log('🟢 check bookmark exist', url, method, type);
     const bookmarkManager = new BookmarkManager();
     const bookmark = await bookmarkManager.findBookmark(url, method, type);
-    if (!bookmark || !bookmark.toNotarize) {
-      return;
-    }
+    if (!bookmark) return;
+    //console.log('🟢 bookmark exist', bookmark);
 
-    //prevent spamming of requests
-    const lastNotaryRequest = await getLastNotaryRequest();
-    console.log('lastNotaryRequest', lastNotaryRequest);
-
-    if (lastNotaryRequest) {
-      const timeDiff = Date.now() - lastNotaryRequest.timestamp;
-      if (timeDiff < NOTARIZATION_BUFFER_TIME) {
+    const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
+    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
+      const timeDiff = Date.now() - bookmark.notarizedAt;
+      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
+      if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
+        //console.log('🟢 timediff not ok');
         return;
       }
     }
-
-    if (!bookmark) return;
+    //console.log('🟢 timediff ok');
 
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
@@ -172,9 +176,6 @@ export const handleNotarization = (
           method: req.method,
           headers: headers,
           body: parsedBody,
-          maxTranscriptSize: 16384,
-          secretHeaders: [],
-          secretResps: [],
           notaryUrl,
           websocketProxyUrl,
         },
@@ -226,88 +227,3 @@ export const onResponseStarted = (
     });
   });
 };
-
-// export const onCompletedForNotarization = (
-//   details: browser.WebRequest.OnBeforeRequestDetailsType,
-// ) => {
-//   console.log('onCompletedForNotarization');
-//   console.log('details', details);
-//   mutex.runExclusive(async () => {
-//     const { method, url, type, tabId, requestId } = details;
-
-//     if (tabId === -1) return;
-
-//     const bookmark = bookmarks.find(
-//       (bm) =>
-//         url.startsWith(bm.url) && method === bm.method && type === bm.type,
-//     );
-
-//     if (bookmark) {
-//       const cache = getCacheByTabId(tabId);
-
-//       const req = cache.get<RequestLog>(requestId);
-
-//       if (!req) return;
-
-//       console.log('req', req);
-//       const res = await replayRequest(req);
-//       const secretHeaders = req.requestHeaders
-//         .map((h) => {
-//           return `${h.name.toLowerCase()}: ${h.value || ''}` || '';
-//         })
-//         .filter((d) => !!d);
-
-//       const selectedValue = res.match(
-//         new RegExp(bookmark.responseSelector, 'g'),
-//       );
-
-//       if (selectedValue) {
-//         const revealed = bookmark.valueTransform.replace(
-//           '%s',
-//           selectedValue[0],
-//         );
-//         const selectionStart = res.indexOf(revealed);
-//         const selectionEnd = selectionStart + revealed.length - 1;
-//         const secretResps = [
-//           res.substring(0, selectionStart),
-//           res.substring(selectionEnd, res.length),
-//         ].filter((d) => !!d);
-
-//         const hostname = urlify(req.url)?.hostname;
-//         const notaryUrl = await get(NOTARY_API_LS_KEY);
-//         const websocketProxyUrl = await get(PROXY_API_LS_KEY);
-
-//         const headers: { [k: string]: string } = req.requestHeaders.reduce(
-//           (acc: any, h) => {
-//             acc[h.name] = h.value;
-//             return acc;
-//           },
-//           { Host: hostname },
-//         );
-
-//         //TODO: for some reason, these needs to be override to work
-//         headers['Accept-Encoding'] = 'identity';
-//         headers['Connection'] = 'close';
-
-//         await handleProveRequestStart(
-//           {
-//             type: BackgroundActiontype.prove_request_start,
-//             data: {
-//               url: req.url,
-//               method: req.method,
-//               headers: headers,
-//               body: req.requestBody,
-//               maxTranscriptSize: 16384,
-//               secretHeaders,
-//               secretResps,
-//               notaryUrl,
-//               websocketProxyUrl,
-//             },
-//           },
-//           // eslint-disable-next-line @typescript-eslint/no-empty-function
-//           () => {},
-//         );
-//       }
-//     }
-//   });
-// };

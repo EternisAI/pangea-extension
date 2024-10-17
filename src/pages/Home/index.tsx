@@ -1,16 +1,13 @@
 import React, { ReactElement, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useUniqueRequests } from '../../reducers/requests';
 import { ErrorModal } from '../../components/ErrorModal';
 import Globe from '../../components/SvgIcons/Globe';
 import Clipboard from '../../components/SvgIcons/Clipboard';
-import Search from '../../components/SvgIcons/Search';
 import Settings from '../../components/SvgIcons/Settings';
 import Bookmarks from '../Bookmarks';
 import NavButton from '../../components/NavButton';
 
 export default function Home(): ReactElement {
-  const requests = useUniqueRequests();
   const navigate = useNavigate();
   const [error, showError] = useState('');
 
@@ -30,13 +27,6 @@ export default function Home(): ReactElement {
           title="Attestations"
           subtitle="See your attestations in progress"
           onClick={() => navigate('/history')}
-        />
-
-        <NavButton
-          ImageIcon={<Search />}
-          title="Search requests"
-          subtitle={`Search previous ${requests.length} search requests`}
-          onClick={() => navigate('/requests')}
         />
 
         <NavButton
