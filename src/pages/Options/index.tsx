@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useCallback,
   MouseEvent,
+  ReactNode,
 } from 'react';
 import {
   set,
@@ -35,13 +36,18 @@ import Modal, { ModalContent } from '../../components/Modal/Modal';
 import browser from 'webextension-polyfill';
 import { LoggingLevel } from '@eternis/tlsn-js';
 
-import { Input } from '../../components/Table/table';
 import RemoteAttestationBadge from '../../components/RemoteAttestationBadge';
+
+import { Identity } from '@semaphore-protocol/identity';
+import { bigintToHex } from '../../utils/misc';
+import InfoCircle from '../../components/SvgIcons/InfoCircle';
+import DropdownChevron from '../../components/SvgIcons/DropdownChevron';
 import NavButton from '../../components/NavButton';
 import Search from '../../components/SvgIcons/Search';
 import { useNavigate } from 'react-router';
 import { useUniqueRequests, useDevMode } from '../../reducers/requests';
 // import { version } from '../../../package.json';
+import { useIdentity } from '../../reducers/identity';
 
 export default function Options(): ReactElement {
   const [notary, setNotary] = useState(NOTARY_API);
@@ -58,7 +64,8 @@ export default function Options(): ReactElement {
   const requests = useUniqueRequests();
   const [devMode, setDevMode] = useDevMode();
 
-  console.log('devMode', devMode);
+  const [identity, setIdentity] = useIdentity();
+
   useEffect(() => {
     (async () => {
       setNotary((await getNotaryApi()) || NOTARY_API);
@@ -104,7 +111,7 @@ export default function Options(): ReactElement {
   }, [devMode]);
 
   return (
-    <div className="flex flex-col flex-nowrap flex-grow">
+    <div className="flex flex-col flex-nowrap flex-grow px-4 py-5 overflow-y-auto">
       {showReloadModal && (
         <Modal
           className="flex flex-col items-center text-base cursor-default justify-center !w-auto mx-4 my-[50%] p-4 gap-4"
@@ -134,7 +141,7 @@ export default function Options(): ReactElement {
         <NavButton
           ImageIcon={<Search />}
           title="Search requests"
-          subtitle={`Search previous ${requests.length} requests`}
+          subtitle={`${requests.length} recent requests`}
           onClick={() => navigate('/requests')}
         />
       </div>
@@ -145,50 +152,48 @@ export default function Options(): ReactElement {
         proxy={proxy}
         setProxy={setProxy}
         setDirty={setDirty}
+        identity={identity || undefined}
         toggleDevMode={toggleDevMode}
         devMode={devMode}
       />
-      <div className="justify-left px-2 pt-3 gap-2">
-        <button
-          className="cursor-pointer  hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
+
+      <div className="flex flex-row mb-8 mx-auto">
+        <div
+          className="cursor-pointer text-[#092EEA] text-sm font-medium text-center hover:bg-slate-100 px-2 py-1 rounded-lg flex items-center gap-1"
           onClick={onAdvanced}
         >
-          <i
-            className={
-              advanced
-                ? 'fa-solid fa-caret-down pr-1'
-                : 'fa-solid fa-caret-right pr-1'
-            }
-          ></i>
           Advanced
-        </button>
+          <DropdownChevron reverse={advanced} />
+        </div>
       </div>
       {!advanced ? (
         <></>
       ) : (
-        <AdvancedOptions
-          maxSent={maxSent}
-          setMaxSent={setMaxSent}
-          maxReceived={maxReceived}
-          setMaxReceived={setMaxReceived}
-          setDirty={setDirty}
-          loggingLevel={loggingLevel}
-          setLoggingLevel={setLoggingLevel}
-          setShouldReload={setShouldReload}
-          setNotary={setNotary}
-          setProxy={setProxy}
-        />
+        <div className="flex flex-col w-full p-2">
+          <AdvancedOptions
+            maxSent={maxSent}
+            setMaxSent={setMaxSent}
+            maxReceived={maxReceived}
+            setMaxReceived={setMaxReceived}
+            setDirty={setDirty}
+            loggingLevel={loggingLevel}
+            setLoggingLevel={setLoggingLevel}
+            setShouldReload={setShouldReload}
+            setNotary={setNotary}
+            setProxy={setProxy}
+          />
+        </div>
       )}
       <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
         <button
-          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
+          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center w-full"
           disabled={!dirty}
           onClick={onSave}
         >
-          Save
+          Save Changes
         </button>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-auto py-4">
         <RemoteAttestationBadge />
       </div>
     </div>
@@ -197,23 +202,51 @@ export default function Options(): ReactElement {
 
 function InputField(props: {
   label?: string;
+  LabelIcon?: ReactNode;
   placeholder?: string;
   value?: string;
   type?: string;
   min?: number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  multiline?: boolean;
+  readOnly?: boolean;
 }) {
-  const { label, placeholder, value, type, min, onChange } = props;
+  const {
+    label,
+    LabelIcon,
+    placeholder,
+    value,
+    type,
+    min,
+    onChange,
+    multiline,
+    readOnly,
+  } = props;
 
   return (
-    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
-      <div className="text-sm font-semibold cursor-default">{label}</div>
+    <div className="flex flex-col flex-nowrap gap-1">
+      <div className="text-sm font-medium cursor-default flex items-center">
+        {label}
+        {LabelIcon && <span>&nbsp;</span>}
+        {LabelIcon}
+      </div>
 
-      <Input
+      {/* <Input
         id="search"
         value={value}
         placeholder={placeholder}
         onChange={onChange}
+      /> */}
+      <textarea
+        onChange={onChange}
+        className={
+          'flex w-full rounded-md border border-[#E4E6EA] resize-none text-base bg-white px-3 py-2 placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 mb-6'
+        }
+        value={value}
+        placeholder={placeholder}
+        id="search"
+        rows={multiline ? 2 : 1}
+        readOnly={readOnly}
       />
     </div>
   );
@@ -226,6 +259,7 @@ function NormalOptions(props: {
   setProxy: (value: string) => void;
   setDirty: (value: boolean) => void;
   toggleDevMode: () => void;
+  identity?: Identity;
   devMode: boolean;
 }) {
   const {
@@ -236,14 +270,36 @@ function NormalOptions(props: {
     setDirty,
     toggleDevMode,
     devMode,
+    identity,
   } = props;
 
   return (
-    <div>
-      <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
-        {/* <div className="font-semibold">Version</div>
-        <div className="input border bg-slate-100">{version}</div> */}
-      </div>
+    <div className="flex flex-col flex-nowrap">
+      {/* <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
+        <div className="font-semibold">Version</div>
+        <div className="input border bg-slate-100">{version}</div>
+      </div> */}
+
+      <InputField
+        label="Your public key"
+        placeholder="Public key"
+        value={bigintToHex(identity?.commitment)}
+        type="text"
+        readOnly
+        multiline
+        LabelIcon={
+          <div
+            onClick={() => {
+              chrome.tabs.create({
+                url: 'https://eternis.ai/',
+              });
+            }}
+            className="cursor-pointer"
+          >
+            <InfoCircle />
+          </div>
+        }
+      />
 
       <InputField
         label="Notary API"
@@ -360,7 +416,7 @@ function AdvancedOptions(props: {
       <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
         <div className="font-semibold">Logging Level</div>
         <select
-          className="select !bg-white border !px-2 !py-1"
+          className="select !bg-white text-base !font-medium !border !border-r-[1px] !border-b-[1px] !border-[#E4E6EA] rounded-md !px-3 !py-2"
           onChange={(e) => {
             setLoggingLevel(e.target.value as LoggingLevel);
             setDirty(true);

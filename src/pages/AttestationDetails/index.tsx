@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { download, printAttestation, urlify } from '../../utils/misc';
+import {
+  bigintToHex,
+  download,
+  printAttestation,
+  urlify,
+} from '../../utils/misc';
 import { useRequestHistory } from '../../reducers/history';
 
 import {
@@ -10,9 +15,12 @@ import {
 } from '../../utils/misc';
 import { AttrAttestation } from '../../utils/types';
 import { CheckCircle } from 'lucide-react';
+import { Identity } from '@semaphore-protocol/identity';
+import { useIdentity } from '../../reducers/identity';
 import { VERIFIER_APP_URL } from '../../utils/constants';
 
 export default function AttestationDetails() {
+  const [identity] = useIdentity();
   const params = useParams<{ host: string; requestId: string }>();
 
   const request = useRequestHistory(params.requestId);
@@ -80,6 +88,31 @@ export default function AttestationDetails() {
             className="flex-1 ml-2 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
           >
             Verify
+          </div>
+        </div>
+
+        <div className="p-4 border border-[#E4E6EA] bg-white rounded-xl flex flex-col">
+          <div className="flex flex-row items-center">
+            <div className="flex-1 font-bold text-[#4B5563] text-lg truncate">
+              Your public key
+            </div>
+          </div>
+          <div className="text-base mt-4 text-[#9BA2AE] break-all">
+            {bigintToHex(identity?.commitment)}
+          </div>
+          <div className="text-sm text-[#1F2937] mt-4">
+            Every attestation you create will be associated with your public
+            cryptographic key.&nbsp;
+            <span
+              className="text-[#092EEA] cursor-pointer"
+              onClick={() => {
+                chrome.tabs.create({
+                  url: 'https://eternis.ai/',
+                });
+              }}
+            >
+              Learn more
+            </span>
           </div>
         </div>
 

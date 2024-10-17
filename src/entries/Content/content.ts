@@ -46,9 +46,6 @@ export class TLSN {
     proofOptions?: {
       notaryUrl?: string;
       websocketProxyUrl?: string;
-      maxSentData?: number;
-      maxRecvData?: number;
-      maxTranscriptSize?: number;
       metadata?: {
         [k: string]: string;
       };
@@ -59,9 +56,6 @@ export class TLSN {
       method: requestOptions?.method,
       headers: requestOptions?.headers,
       body: requestOptions?.body,
-      maxSentData: proofOptions?.maxSentData,
-      maxRecvData: proofOptions?.maxRecvData,
-      maxTranscriptSize: proofOptions?.maxTranscriptSize,
       notaryUrl: proofOptions?.notaryUrl,
       websocketProxyUrl: proofOptions?.websocketProxyUrl,
       metadata: proofOptions?.metadata,

@@ -22,6 +22,8 @@ import {
   get,
   MAX_SENT_LS_KEY,
   MAX_RECEIVED_LS_KEY,
+  getNotaryApi,
+  getProxyApi,
   getMaxRecv,
   getMaxSent,
 } from '../../utils/storage';
@@ -36,11 +38,42 @@ export default function RequestDetail(props: Props): ReactElement {
   const request = useRequest(props.requestId);
   const navigate = useNavigate();
 
-  const notarize = useCallback(async () => {
-    if (!request) return;
+  const dispatch = useDispatch();
 
-    navigate('/notary/' + request.requestId);
-  }, [request, props.requestId]);
+  const notarize = useCallback(async () => {
+    const req = request;
+    if (!req) return;
+    const hostname = urlify(req.url)?.hostname;
+    const notaryUrl = await getNotaryApi();
+    const websocketProxyUrl = await getProxyApi();
+
+    const headers: { [k: string]: string } = req.requestHeaders.reduce(
+      (acc: any, h) => {
+        acc[h.name] = h.value;
+        return acc;
+      },
+      { Host: hostname },
+    );
+
+    //TODO: for some reason, these needs to be override to work
+    headers['Accept-Encoding'] = 'identity';
+    headers['Connection'] = 'close';
+
+    console.log('Notarize from search request', req.type);
+    dispatch(
+      // @ts-ignore
+      notarizeRequest({
+        url: req.url,
+        method: req.method,
+        headers,
+        body: req.requestBody,
+        notaryUrl,
+        websocketProxyUrl,
+        type: req.type,
+      }),
+    );
+    navigate(`/history`);
+  }, [request]);
 
   if (!request) return <></>;
 

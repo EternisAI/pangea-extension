@@ -81,3 +81,4 @@ The link to files is located in constants.ts file.
 
 - [Webpack documentation](https://webpack.js.org/concepts/)
 - [Chrome Extension documentation](https://developer.chrome.com/extensions/getstarted)
+ 

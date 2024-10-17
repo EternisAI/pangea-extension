@@ -65,7 +65,7 @@ const Offscreen = () => {
               try {
                 await init({ loggingLevel });
               } catch (error) {
-                console.error('wasm aready init');
+                console.log('wasm aready init');
               }
               const result = await verify_attestation(
                 remoteAttestation,
@@ -124,12 +124,20 @@ const Offscreen = () => {
               break;
             }
             case BackgroundActiontype.process_prove_request: {
-              const { id } = request.data;
+              const notaryRequest = {
+                ...request.data,
+                maxTranscriptSize: 0, //legacy fields
+                maxSentData: 0, //legacy fields
+                maxRecvData: 0, //legacy fields
+                secretHeaders: [], //legacy fields
+                secretResps: [], //legacy fields
+              };
+              const { id } = notaryRequest;
 
               (async () => {
                 try {
                   const proof = await withRetry(() =>
-                    createProof(request.data),
+                    createProof(notaryRequest),
                   );
                   console.log('BackgroundActiontype ', proof);
                   browser.runtime.sendMessage({
