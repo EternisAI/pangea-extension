@@ -1,5 +1,6 @@
 import { Identity } from '@semaphore-protocol/identity';
 import { sha256 } from '../utils/misc';
+import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 export class IdentityManager {
   async getIdentity(): Promise<Identity> {
@@ -40,3 +41,18 @@ export class IdentityManager {
     return identity;
   }
 }
+
+export const useIdentity = (): [
+  Identity | null,
+  Dispatch<SetStateAction<Identity | null>>,
+] => {
+  const [identity, setIdentity] = useState<Identity | null>(null);
+  useEffect(() => {
+    (async () => {
+      const identityManager = new IdentityManager();
+      const identity = await identityManager.getIdentity();
+      setIdentity(identity);
+    })();
+  }, []);
+  return [identity, setIdentity];
+};

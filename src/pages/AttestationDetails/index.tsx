@@ -15,12 +15,11 @@ import {
 } from '../../utils/misc';
 import { AttrAttestation } from '../../utils/types';
 import { CheckCircle } from 'lucide-react';
-import { IdentityManager } from '../../reducers/identity';
 import { Identity } from '@semaphore-protocol/identity';
+import { useIdentity } from '../../reducers/identity';
 
-const identityManager = new IdentityManager();
 export default function AttestationDetails() {
-  const [identity, setIdentity] = useState<Identity>();
+  const [identity] = useIdentity();
   const params = useParams<{ host: string; requestId: string }>();
 
   const request = useRequestHistory(params.requestId);
@@ -45,10 +44,6 @@ export default function AttestationDetails() {
 
     setSessionData(signedSessionDecoded?.response || '');
   }, [request]);
-
-  useEffect(() => {
-    identityManager.getIdentity().then(setIdentity);
-  }, []);
 
   if (!attributeAttestation) return <>ahi</>;
   return (

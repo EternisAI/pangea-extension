@@ -34,14 +34,14 @@ import browser from 'webextension-polyfill';
 import { LoggingLevel } from '@eternis/tlsn-js';
 
 import RemoteAttestationBadge from '../../components/RemoteAttestationBadge';
-import { IdentityManager } from '../../reducers/identity';
+
 import { Identity } from '@semaphore-protocol/identity';
 import { bigintToHex } from '../../utils/misc';
 import InfoCircle from '../../components/SvgIcons/InfoCircle';
 import DropdownChevron from '../../components/SvgIcons/DropdownChevron';
 // import { version } from '../../../package.json';
+import { useIdentity } from '../../reducers/identity';
 
-const identityManager = new IdentityManager();
 export default function Options(): ReactElement {
   const [notary, setNotary] = useState(NOTARY_API);
   const [proxy, setProxy] = useState(NOTARY_PROXY);
@@ -54,7 +54,7 @@ export default function Options(): ReactElement {
   const [advanced, setAdvanced] = useState(false);
   const [showReloadModal, setShowReloadModal] = useState(false);
 
-  const [identity, setIdentity] = useState<Identity>();
+  const [identity, setIdentity] = useIdentity();
 
   useEffect(() => {
     (async () => {
@@ -65,15 +65,6 @@ export default function Options(): ReactElement {
       setLoggingLevel((await getLoggingFilter()) || 'Info');
     })();
   }, [advanced]);
-
-  useEffect(() => {
-    console.log('useEffect');
-    (async () => {
-      const identity = await identityManager.getIdentity();
-      console.log('identity', identity);
-      setIdentity(identity);
-    })();
-  }, []);
 
   const onSave = useCallback(
     async (e: MouseEvent<HTMLButtonElement>, skipCheck = false) => {
@@ -137,7 +128,7 @@ export default function Options(): ReactElement {
         proxy={proxy}
         setProxy={setProxy}
         setDirty={setDirty}
-        identity={identity}
+        identity={identity || undefined}
       />
 
       <div className="flex flex-row mb-8 mx-auto">
