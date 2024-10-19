@@ -105,7 +105,7 @@ export const onBeforeRequest = (
 export const handleNotarization = (
   details: browser.WebRequest.OnCompletedDetailsType,
 ) => {
-  console.log('🟢 handleNotarization', details);
+  //console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
     const isEnabled = await get(EXTENSION_ENABLED);
     if (!isEnabled) return;

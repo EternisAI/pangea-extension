@@ -5,12 +5,13 @@ import {
   NotaryServer,
   Prover as _Prover,
   RemoteAttestation,
+  AttestationObject,
 } from '@eternis/tlsn-js';
 
 import { urlify } from '../../utils/misc';
 import { BackgroundActiontype } from '../Background/rpc';
 import browser from 'webextension-polyfill';
-import { Proof, AttrAttestation } from '../../utils/types';
+import { Proof } from '../../utils/types';
 import { Method } from '@eternis/tlsn-js/wasm/pkg';
 
 const { init, verify_attestation, Prover, NotarizedSession, TlsProof }: any =
@@ -254,7 +255,7 @@ async function createProof(options: {
   id: string;
   secretHeaders: string[];
   secretResps: string[];
-}): Promise<AttrAttestation> {
+}): Promise<AttestationObject> {
   const {
     url,
     method = 'GET',
@@ -265,8 +266,6 @@ async function createProof(options: {
     notaryUrl,
     websocketProxyUrl,
     id,
-    secretHeaders,
-    secretResps,
   } = options;
 
   const hostname = urlify(url)?.hostname || '';
@@ -289,17 +288,17 @@ async function createProof(options: {
 
   const result = await prover.notarize();
 
-  const proof: AttrAttestation = {
+  const proof: AttestationObject = {
     version: '1.0',
     meta: {
       notaryUrl,
       websocketProxyUrl,
     },
     signature: result.signature,
-    signedSession: result.signedSession,
-    applicationData: result.applicationData,
-    attestations: result.attestation,
+    application_data: result.application_data,
+    attributes: result.attributes,
   };
+  console.log('proof', proof);
   return proof;
 }
 
