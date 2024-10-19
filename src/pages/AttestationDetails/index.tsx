@@ -1,17 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { download, printAttestation, urlify } from '../../utils/misc';
+import { download, urlify } from '../../utils/misc';
 import { useRequestHistory } from '../../reducers/history';
-
-import {
-  decodeTLSData,
-  parseHexSignature,
-  parseAttributeFromRequest,
-} from '../../utils/misc';
-import { AttrAttestation } from '../../utils/types';
 import { CheckCircle } from 'lucide-react';
 import { VERIFIER_APP_URL } from '../../utils/constants';
-
+import { AttestationObject, decodeAppData, Attribute } from '@eternis/tlsn-js';
 export default function AttestationDetails() {
   const params = useParams<{ host: string; requestId: string }>();
 
@@ -19,23 +12,23 @@ export default function AttestationDetails() {
   const requestUrl = urlify(request?.url || '');
 
   const [attributeAttestation, setAttributeAttestation] =
-    useState<AttrAttestation>();
-  const [attributes, setAttributes] = useState<string[]>([]);
+    useState<AttestationObject>();
+  const [attributes, setAttributes] = useState<Attribute[]>([]);
   const [sessionData, setSessionData] = useState<string>('');
 
   useEffect(() => {
-    const AttributeAttestation = request?.proof as AttrAttestation;
+    const AttributeAttestation = request?.proof;
 
     console.log('AttributeAttestation', AttributeAttestation);
 
     if (!AttributeAttestation) return;
     setAttributeAttestation(AttributeAttestation);
 
-    const { attributes, signedSessionDecoded } =
-      parseAttributeFromRequest(AttributeAttestation);
+    const { attributes } = AttributeAttestation;
     if (attributes) setAttributes(attributes);
 
-    setSessionData(signedSessionDecoded?.response || '');
+    const decodedAppData = decodeAppData(AttributeAttestation.application_data);
+    setSessionData(decodedAppData?.response_body || '');
   }, [request]);
 
   const copyAttestation = () => {
@@ -104,8 +97,8 @@ export default function AttestationDetails() {
 }
 
 export function AttributeAttestation(props: {
-  attrAttestation: AttrAttestation;
-  attributes: string[];
+  attrAttestation: AttestationObject;
+  attributes: Attribute[];
   sessionData: string;
 }) {
   const { attrAttestation, attributes, sessionData } = props;
@@ -115,7 +108,7 @@ export function AttributeAttestation(props: {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h3 className="font-semibold">Notary</h3>
-            <p className="break-all">{attrAttestation.meta.notaryUrl}</p>
+            <p className="break-all">{attrAttestation?.meta?.notaryUrl}</p>
           </div>
           <div>
             <h3 className="font-semibold">Version</h3>
@@ -124,15 +117,13 @@ export function AttributeAttestation(props: {
           <div>
             <h3 className="font-semibold">Websocket proxy</h3>
             <p className="break-all">
-              websocket proxy: {attrAttestation.meta.websocketProxyUrl}
+              websocket proxy: {attrAttestation?.meta?.websocketProxyUrl}
             </p>
           </div>
 
           <div className="col-span-2">
             <h3 className="font-semibold">Signature</h3>
-            <p className="break-all text-xs">
-              {parseHexSignature(attrAttestation.signature)}
-            </p>
+            <p className="break-all text-xs">{attrAttestation.signature}</p>
           </div>
         </div>
         <div className="border-t pt-4">
@@ -142,7 +133,7 @@ export function AttributeAttestation(props: {
               {props.attributes.map((attribute) => (
                 <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  {attribute}
+                  {attribute.attribute_name}
                 </div>
               ))}
             </>
