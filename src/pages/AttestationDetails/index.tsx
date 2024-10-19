@@ -117,7 +117,7 @@ export function AttributeAttestation(props: {
           <div>
             <h3 className="font-semibold">Websocket proxy</h3>
             <p className="break-all">
-              websocket proxy: {attrAttestation?.meta?.websocketProxyUrl}
+              {attrAttestation?.meta?.websocketProxyUrl}
             </p>
           </div>
 
