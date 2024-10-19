@@ -150,7 +150,7 @@ export function AttestationCard({
     );
   }
 
-  const { attributes } = request?.proof as AttestationObject;
+  const attributes = request?.proof?.attributes || [];
 
   return (
     <div className="flex flex-col" key={requestId}>
