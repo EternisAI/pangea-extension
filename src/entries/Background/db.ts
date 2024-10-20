@@ -3,8 +3,7 @@ import type { RequestHistory } from './rpc';
 import { PluginConfig, PluginMetadata, sha256 } from '../../utils/misc';
 import mutex from './mutex';
 const charwise = require('charwise');
-
-import { AttrAttestation } from '../../utils/types';
+import { AttestationObject } from '@eternis/tlsn-js';
 export const db = new Level('./ext-db', {
   valueEncoding: 'json',
 });
@@ -48,7 +47,7 @@ export async function addNotaryRequest(
 
 export async function addNotaryRequestProofs(
   id: string,
-  proof: AttrAttestation,
+  proof: AttestationObject,
 ): Promise<RequestHistory | null> {
   const existing = await historyDb.get(id);
 

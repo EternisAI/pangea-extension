@@ -6,14 +6,13 @@ import { useRequestHistory } from '../../reducers/history';
 import { deleteRequestHistory } from '../../reducers/history';
 import { getNotaryApi, getProxyApi } from '../../utils/storage';
 import { BackgroundActiontype } from '../../entries/Background/rpc';
-import { parseAttributeFromRequest } from '../../utils/misc';
 import Modal, { ModalContent } from '../Modal/Modal';
 import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
-import { AttrAttestation } from '../../utils/types';
 import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
 import { useBookmarks } from '../../reducers/bookmarks';
+import { AttestationObject, Attribute } from '@eternis/tlsn-js';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -151,9 +150,7 @@ export function AttestationCard({
     );
   }
 
-  const { attributes } = parseAttributeFromRequest(
-    request?.proof as AttrAttestation,
-  );
+  const attributes = request?.proof?.attributes || [];
 
   return (
     <div className="flex flex-col" key={requestId}>
@@ -201,10 +198,10 @@ export function AttestationCard({
         </div>
 
         <div className="grid grid-cols-[80px,1fr] gap-2 mt-4">
-          {attributes?.map((attribute) => (
+          {attributes?.map((attribute: Attribute) => (
             <>
               <div className="text-[#9BA2AE] text-sm leading-5 font-semibold">
-                {attribute}
+                {attribute.attribute_name}
               </div>
               <div className="text-[#4B5563] text-sm leading-5 truncate"></div>
             </>
