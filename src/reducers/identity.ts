@@ -3,6 +3,15 @@ import { sha256 } from '../utils/misc';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 export class IdentityManager {
+  async getExtensionState(): Promise<boolean> {
+    const storage = await chrome.storage.sync.get('extensionState');
+    return storage['extensionState'] ?? false;
+  }
+
+  async setExtensionState(state: boolean): Promise<void> {
+    await chrome.storage.sync.set({ extensionState: state });
+  }
+
   async getIdentity(): Promise<Identity> {
     const identityStorageId = await sha256('identity');
     try {
@@ -42,17 +51,56 @@ export class IdentityManager {
   }
 }
 
-export const useIdentity = (): [
-  Identity | null,
-  Dispatch<SetStateAction<Identity | null>>,
-] => {
+export const useIdentity = (): {
+  loading: boolean;
+  identity: Identity | null;
+  setIdentity: Dispatch<SetStateAction<Identity | null>>;
+  isLocked: boolean;
+  isSetupCompleted: boolean;
+  onFinishSetup: (userId: string) => Promise<void>;
+  onUnlock: (userId: string) => Promise<void>;
+} => {
+  const [loading, setLoading] = useState(true);
+
+  const [isSetupCompleted, setIsSetupCompleted] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
+
   const [identity, setIdentity] = useState<Identity | null>(null);
+
   useEffect(() => {
     (async () => {
       const identityManager = new IdentityManager();
-      const identity = await identityManager.getIdentity();
-      setIdentity(identity);
+      const extensionState = await identityManager.getExtensionState();
+      setIsSetupCompleted(extensionState);
+      setLoading(false);
     })();
   }, []);
-  return [identity, setIdentity];
+
+  const onFinishSetup = async (userId: string) => {
+    const identityManager = new IdentityManager();
+    await identityManager.setExtensionState(true);
+    const identity = await identityManager.loadIdentity(userId);
+    setIdentity(identity);
+    setIsSetupCompleted(true);
+    setIsLocked(false);
+    console.log('onFinishSetup', identity);
+  };
+
+  const onUnlock = async (userId: string) => {
+    const identityManager = new IdentityManager();
+    const identity = await identityManager.loadIdentity(userId);
+    setIdentity(identity);
+    setIsLocked(false);
+  };
+
+  return {
+    loading,
+    identity,
+    setIdentity,
+    isLocked,
+    onUnlock,
+
+    isSetupCompleted,
+    onFinishSetup,
+  };
 };

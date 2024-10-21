@@ -44,11 +44,18 @@ import { getConnection } from '../Background/db';
 import NavHeader from '../../components/NavHeader';
 import Websites from '../../pages/Websites';
 import AttestationDetails from '../../pages/AttestationDetails';
+import Locked from '../../pages/Locked';
+import { useIdentity } from '../../reducers/identity2';
 
 const Popup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLocked, loading } = useIdentity();
+
+  useEffect(() => {
+    console.log('isLocked', isLocked);
+  }, [isLocked]);
 
   useEffect(() => {
     (async () => {
@@ -94,6 +101,10 @@ const Popup = () => {
       }
     });
   }, []);
+
+  if (isLocked || loading) {
+    return <Locked />;
+  }
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-[#F9FAFB]">
