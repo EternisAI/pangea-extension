@@ -29,6 +29,7 @@ export default function AttestationDetails() {
     const { attributes } = AttributeAttestation;
     if (attributes) setAttributes(attributes);
 
+    console.log('application_data', AttributeAttestation.application_data);
     const decodedAppData = decodeAppData(AttributeAttestation.application_data);
     setSessionData(decodedAppData?.response_body || '');
   }, [request]);
