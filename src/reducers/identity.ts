@@ -42,17 +42,58 @@ export class IdentityManager {
   }
 }
 
-export const useIdentity = (): [
-  Identity | null,
-  Dispatch<SetStateAction<Identity | null>>,
-] => {
+export const useIdentity = (): {
+  identity: Identity | null;
+  setIdentity: Dispatch<SetStateAction<Identity | null>>;
+  locked: boolean;
+  getIdentity: () => Promise<Identity | null>;
+  loading: boolean;
+} => {
+  const MAXIMUM_TIME = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+  const [loading, setLoading] = useState(true);
+  const [locked, setLocked] = useState(true);
   const [identity, setIdentity] = useState<Identity | null>(null);
+
+  const getIdentity = async () => {
+    console.log('getIdentity');
+
+    // reset for testing
+    await chrome.storage.local.set({ lastUnlockedTimestamp: 0 });
+
+    const lastUnlockedTimestamp = (
+      await chrome.storage.local.get('lastUnlockedTimestamp')
+    ).lastUnlockedTimestamp;
+    const currentTimestamp = Date.now();
+    console.log('lastUnlockedTimestamp', lastUnlockedTimestamp);
+    console.log('currentTimestamp', currentTimestamp);
+    // setLocked(false);
+
+    if (
+      lastUnlockedTimestamp &&
+      currentTimestamp - lastUnlockedTimestamp.lastUnlockedTimestamp >
+        MAXIMUM_TIME
+    ) {
+      setLocked(true);
+      return null;
+    }
+
+    const identityManager = new IdentityManager();
+    const identity = await identityManager.getIdentity();
+    // await chrome.storage.local.set({ lastUnlockedTimestamp: currentTimestamp });
+    // setLocked(false);
+    setIdentity(identity);
+    return identity;
+  };
+
   useEffect(() => {
     (async () => {
-      const identityManager = new IdentityManager();
-      const identity = await identityManager.getIdentity();
-      setIdentity(identity);
+      // const identityManager = new IdentityManager();
+      // const identity = await identityManager.getIdentity();
+      // setIdentity(identity);
+      await getIdentity();
+      setLoading(false);
     })();
   }, []);
-  return [identity, setIdentity];
+  return { identity, setIdentity, locked, getIdentity, loading };
 };

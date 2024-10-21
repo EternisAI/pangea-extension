@@ -44,11 +44,14 @@ import { getConnection } from '../Background/db';
 import NavHeader from '../../components/NavHeader';
 import Websites from '../../pages/Websites';
 import AttestationDetails from '../../pages/AttestationDetails';
+import { useIdentity } from '../../reducers/identity';
+import Lock from '../../pages/Lock';
 
 const Popup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { loading, locked } = useIdentity();
 
   useEffect(() => {
     (async () => {
@@ -94,6 +97,23 @@ const Popup = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    console.log('locked', locked);
+    if (locked) {
+      navigate('/lock');
+    } else {
+      navigate('/home');
+    }
+  }, [locked]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col w-full h-full overflow-hidden bg-[#F9FAFB]">
+        loading
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full h-full overflow-hidden bg-[#F9FAFB]">
@@ -149,6 +169,8 @@ const Popup = () => {
           path="/install-plugin-approval"
           element={<InstallPluginApproval />}
         />
+
+        <Route path="/lock" element={<Lock />} />
 
         <Route path="*" element={<Navigate to="/home" />} />
       </Routes>

@@ -64,7 +64,7 @@ export default function Options(): ReactElement {
   const requests = useUniqueRequests();
   const [devMode, setDevMode] = useDevMode();
 
-  const [identity, setIdentity] = useIdentity();
+  const { identity, setIdentity } = useIdentity();
 
   useEffect(() => {
     (async () => {
