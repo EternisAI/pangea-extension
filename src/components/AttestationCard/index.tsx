@@ -11,6 +11,9 @@ import Modal, { ModalContent } from '../Modal/Modal';
 import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { AttrAttestation } from '../../utils/types';
+import { useDevMode } from '../../reducers/requests';
+import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
+import { useBookmarks } from '../../reducers/bookmarks';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -68,6 +71,10 @@ export function AttestationCard({
   const location = useLocation();
   const requestUrl = urlify(request?.url || '');
   const date = formatAttestationDate(requestId, previousRequestId);
+  const [bookmarks] = useBookmarks();
+  const [devMode] = useDevMode();
+
+  console.log('bookmarks', bookmarks);
 
   const { status } = request || {};
 
@@ -98,6 +105,25 @@ export function AttestationCard({
     showError(false);
   }, [showingError, showError]);
 
+  const copyRequest = useCallback(async () => {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const currentTabUrl = tabs[0]?.url || '';
+    const request_ = {
+      id: bookmarks.length + 1,
+      host: extractHostFromUrl(request?.url || ''),
+      urlRegex: urlToRegex(request?.url || ''),
+      targetUrl: currentTabUrl,
+      method: request?.method,
+      title: '',
+      description: '',
+      icon: '',
+      responseType: '',
+      actionSelectors: [],
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(request_, null, 2));
+  }, [request, bookmarks]);
+
   function ErrorModal(): ReactElement {
     const msg = typeof request?.error === 'string' && request?.error;
     return !showingError ? (
@@ -125,12 +151,12 @@ export function AttestationCard({
     );
   }
 
-  const { attributes, signedSessionDecoded } = parseAttributeFromRequest(
+  const { attributes } = parseAttributeFromRequest(
     request?.proof as AttrAttestation,
   );
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" key={requestId}>
       <ErrorModal />
       {showDate && date && (
         <div className="text-sm font-bold mb-2 leading-5">{date}</div>
@@ -241,14 +267,14 @@ export function AttestationCard({
                 Save
               </div>
 
-              <div
-                onClick={() => {
-                  navigator.clipboard.writeText(JSON.stringify(request));
-                }}
-                className="ml-3 cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#e2e3e8] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
-              >
-                Copy request
-              </div>
+              {devMode && (
+                <div
+                  onClick={copyRequest}
+                  className="ml-3 cursor-pointer border border-[#E9EBF3] bg-[#F6F7FC] hover:bg-[#e2e3e8] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
+                >
+                  Copy request
+                </div>
+              )}
             </>
           )}
 

@@ -3,6 +3,10 @@ import { RequestHistory, RequestLog } from '../entries/Background/rpc';
 import { sha256, getNotaryConfig } from '../utils/misc';
 import { DEFAULT_CONFIG_ENDPOINT, CONFIG_CACHE_AGE } from '../utils/constants';
 import { getCacheByTabId } from '../entries/Background/cache';
+import { Provider } from '../utils/types';
+import { urlToRegex } from '../utils/misc';
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+
 export type Bookmark = {
   id?: string;
   host?: string;
@@ -11,14 +15,13 @@ export type Bookmark = {
   urlRegex: string;
   targetUrl: string;
   method: string;
-  type: string;
+  type?: string;
   title: string;
   description: string;
-  responseSelector: string;
-  valueTransform: string;
   icon?: string;
   toNotarize?: boolean;
   notarizedAt?: number;
+  actionSelectors?: string[];
 };
 
 export class BookmarkManager {
@@ -84,10 +87,16 @@ export class BookmarkManager {
   async getDefaultProviders(): Promise<Bookmark[]> {
     const config = await getNotaryConfig();
 
-    for (const bookmark of config.PROVIDERS as Bookmark[]) {
+    const bookmarks = config.PROVIDERS.map((provider) => ({
+      ...provider,
+      id: provider.id.toString(),
+      type: provider.transport,
+    }));
+
+    for (const bookmark of bookmarks) {
       await this.addBookmark(bookmark);
     }
-    return config.PROVIDERS as Bookmark[];
+    return bookmarks as Bookmark[];
   }
 
   async findBookmark(
@@ -100,10 +109,7 @@ export class BookmarkManager {
     return (
       bookmarks.find((bookmark) => {
         const regex = new RegExp(bookmark.urlRegex);
-        const result =
-          regex.test(url) &&
-          bookmark.method === method &&
-          bookmark.type === type;
+        const result = regex.test(url) && bookmark.method === method;
 
         return result;
       }) || null
@@ -118,6 +124,11 @@ export class BookmarkManager {
       bookmarkIds.map((id) => this.getBookmark(id)),
     );
     return bookmarks.filter((bookmark) => bookmark !== null) as Bookmark[];
+  }
+
+  async getBookmarksLength(): Promise<number> {
+    const bookmarks = await this.getBookmarks();
+    return bookmarks.length;
   }
 
   async deleteBookmark(bookmark: Bookmark): Promise<void> {
@@ -168,36 +179,35 @@ export class BookmarkManager {
     });
   }
 
-  urlToRegex(url: string): string {
-    // Escape special regex characters
-    const escapedUrl = url.replace(/[-\/\\^$.*+?()[\]{}|]/g, '\\$&');
-
-    // Replace dynamic segments (e.g., numeric IDs)
-    // Here we assume segments like '12345' are numeric
-    const regexPattern = escapedUrl.replace(/\\d+/g, '\\d+'); // Adjust as needed for other patterns
-
-    // Allow for optional query strings
-    const finalPattern = `^${regexPattern}(\\?.*)?$`;
-
-    return finalPattern;
-  }
-
   async convertRequestToBookmark(request: RequestHistory) {
     const currentTabInfo = await this.getCurrentTabInfo();
 
     const bookmark: Bookmark = {
       requestId: request.id,
       id: await sha256(request?.url || ''),
-      urlRegex: new RegExp(this.urlToRegex(request?.url || '')).toString(), // this conversion should be improved
+      urlRegex: new RegExp(urlToRegex(request?.url || '')).toString(), // this conversion should be improved
       targetUrl: currentTabInfo?.url || '',
       method: request?.method || '',
       type: request?.type || '',
       title: request.url,
       description: '',
-      responseSelector: '',
-      valueTransform: '',
       icon: '',
     };
     return bookmark;
   }
 }
+
+export const useBookmarks = (): [
+  Bookmark[],
+  Dispatch<SetStateAction<Bookmark[]>>,
+] => {
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+
+  const bookmarkManager = new BookmarkManager();
+  useEffect(() => {
+    (async () => {
+      setBookmarks(await bookmarkManager.getBookmarks());
+    })();
+  }, []);
+  return [bookmarks, setBookmarks];
+};

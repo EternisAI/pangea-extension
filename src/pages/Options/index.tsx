@@ -17,6 +17,9 @@ import {
   getProxyApi,
   getLoggingFilter,
   LOGGING_FILTER_KEY,
+  DEV_MODE_KEY,
+  get,
+  getBoolean,
 } from '../../utils/storage';
 import {
   NOTARY_API,
@@ -34,6 +37,10 @@ import { LoggingLevel } from '@eternis/tlsn-js';
 
 import { Input } from '../../components/Table/table';
 import RemoteAttestationBadge from '../../components/RemoteAttestationBadge';
+import NavButton from '../../components/NavButton';
+import Search from '../../components/SvgIcons/Search';
+import { useNavigate } from 'react-router';
+import { useUniqueRequests, useDevMode } from '../../reducers/requests';
 // import { version } from '../../../package.json';
 
 export default function Options(): ReactElement {
@@ -47,7 +54,11 @@ export default function Options(): ReactElement {
   const [shouldReload, setShouldReload] = useState(false);
   const [advanced, setAdvanced] = useState(false);
   const [showReloadModal, setShowReloadModal] = useState(false);
+  const navigate = useNavigate();
+  const requests = useUniqueRequests();
+  const [devMode, setDevMode] = useDevMode();
 
+  console.log('devMode', devMode);
   useEffect(() => {
     (async () => {
       setNotary((await getNotaryApi()) || NOTARY_API);
@@ -55,6 +66,7 @@ export default function Options(): ReactElement {
       setMaxReceived((await getMaxRecv()) || MAX_RECV);
       setMaxSent((await getMaxSent()) || MAX_SENT);
       setLoggingLevel((await getLoggingFilter()) || 'Info');
+      setDevMode(await getBoolean(DEV_MODE_KEY));
     })();
   }, [advanced]);
 
@@ -86,6 +98,11 @@ export default function Options(): ReactElement {
     setAdvanced(!advanced);
   }, [advanced]);
 
+  const toggleDevMode = useCallback(() => {
+    setDevMode(!devMode);
+    set(DEV_MODE_KEY, !devMode);
+  }, [devMode]);
+
   return (
     <div className="flex flex-col flex-nowrap flex-grow">
       {showReloadModal && (
@@ -113,6 +130,14 @@ export default function Options(): ReactElement {
           </div>
         </Modal>
       )}
+      <div className="flex flex-col   p-4">
+        <NavButton
+          ImageIcon={<Search />}
+          title="Search requests"
+          subtitle={`${requests.length} recent requests`}
+          onClick={() => navigate('/requests')}
+        />
+      </div>
 
       <NormalOptions
         notary={notary}
@@ -120,8 +145,10 @@ export default function Options(): ReactElement {
         proxy={proxy}
         setProxy={setProxy}
         setDirty={setDirty}
+        toggleDevMode={toggleDevMode}
+        devMode={devMode}
       />
-      <div className="justify-left px-2 pt-3 gap-2">
+      <div className="flex justify-center   gap-2">
         <button
           className="cursor-pointer  hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
           onClick={onAdvanced}
@@ -139,27 +166,31 @@ export default function Options(): ReactElement {
       {!advanced ? (
         <></>
       ) : (
-        <AdvancedOptions
-          maxSent={maxSent}
-          setMaxSent={setMaxSent}
-          maxReceived={maxReceived}
-          setMaxReceived={setMaxReceived}
-          setDirty={setDirty}
-          loggingLevel={loggingLevel}
-          setLoggingLevel={setLoggingLevel}
-          setShouldReload={setShouldReload}
-        />
+        <div className="flex flex-col w-full p-2">
+          <AdvancedOptions
+            maxSent={maxSent}
+            setMaxSent={setMaxSent}
+            maxReceived={maxReceived}
+            setMaxReceived={setMaxReceived}
+            setDirty={setDirty}
+            loggingLevel={loggingLevel}
+            setLoggingLevel={setLoggingLevel}
+            setShouldReload={setShouldReload}
+            setNotary={setNotary}
+            setProxy={setProxy}
+          />
+        </div>
       )}
-      <div className="flex flex-row flex-nowrap  gap-2 p-2">
+      <div className="flex flex-row flex-nowrap justify-center gap-2 p-2">
         <button
-          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center"
+          className="cursor-pointer border border-[#E4E6EA] bg-white hover:bg-slate-100 text-[#092EEA] text-sm font-medium py-[10px] px-2 rounded-lg text-center w-full"
           disabled={!dirty}
           onClick={onSave}
         >
-          Save
+          Save Changes
         </button>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-auto py-4">
         <RemoteAttestationBadge />
       </div>
     </div>
@@ -177,7 +208,7 @@ function InputField(props: {
   const { label, placeholder, value, type, min, onChange } = props;
 
   return (
-    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
+    <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 mt-3 b-1">
       <div className="text-sm font-semibold cursor-default">{label}</div>
 
       <Input
@@ -196,8 +227,18 @@ function NormalOptions(props: {
   proxy: string;
   setProxy: (value: string) => void;
   setDirty: (value: boolean) => void;
+  toggleDevMode: () => void;
+  devMode: boolean;
 }) {
-  const { notary, setNotary, proxy, setProxy, setDirty } = props;
+  const {
+    notary,
+    setNotary,
+    proxy,
+    setProxy,
+    setDirty,
+    toggleDevMode,
+    devMode,
+  } = props;
 
   return (
     <div>
@@ -205,30 +246,6 @@ function NormalOptions(props: {
         {/* <div className="font-semibold">Version</div>
         <div className="input border bg-slate-100">{version}</div> */}
       </div>
-
-      {MODE === Mode.Development && (
-        <div className="flex items-center py-1 px-2 gap-2">
-          <input
-            type="checkbox"
-            id="localhost"
-            className="input border"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setNotary(NOTARY_API_LOCAL);
-                setProxy(NOTARY_PROXY_LOCAL);
-              } else {
-                setNotary(NOTARY_API);
-                setProxy(NOTARY_PROXY);
-              }
-              setDirty(true);
-            }}
-          />
-
-          <label htmlFor="localhost" className="font-semibold cursor-pointer">
-            Use localhost notary
-          </label>
-        </div>
-      )}
 
       <InputField
         label="Notary API"
@@ -250,6 +267,21 @@ function NormalOptions(props: {
           setDirty(true);
         }}
       />
+
+      <div className="flex items-center py-1 px-2 gap-2">
+        <input
+          type="checkbox"
+          id="devmode"
+          className=" "
+          onChange={toggleDevMode}
+          checked={devMode}
+        />
+
+        <label htmlFor="devmode" className="font-semibold cursor-pointer">
+          Enable dev mode
+        </label>
+      </div>
+
       {/* <div className="flex flex-col flex-nowrap py-1 px-2 gap-2 cursor-default">
         <div className="font-semibold">Explorer URL</div>
         <div className="input border bg-slate-100">{EXPLORER_API}</div>
@@ -267,6 +299,8 @@ function AdvancedOptions(props: {
   setMaxReceived: (value: number) => void;
   setDirty: (value: boolean) => void;
   setLoggingLevel: (level: LoggingLevel) => void;
+  setNotary: (value: string) => void;
+  setProxy: (value: string) => void;
 }) {
   const {
     maxSent,
@@ -277,6 +311,8 @@ function AdvancedOptions(props: {
     setLoggingLevel,
     loggingLevel,
     setShouldReload,
+    setNotary,
+    setProxy,
   } = props;
 
   return (
@@ -301,6 +337,28 @@ function AdvancedOptions(props: {
           setDirty(true);
         }}
       /> */}
+      <div className="flex items-center py-1 px-2 gap-2">
+        <input
+          type="checkbox"
+          id="localhost"
+          className="input border"
+          onChange={(e) => {
+            if (e.target.checked) {
+              setNotary(NOTARY_API_LOCAL);
+              setProxy(NOTARY_PROXY_LOCAL);
+            } else {
+              setNotary(NOTARY_API);
+              setProxy(NOTARY_PROXY);
+            }
+            setDirty(true);
+          }}
+        />
+
+        <label htmlFor="localhost" className="font-semibold cursor-pointer">
+          Use localhost notary
+        </label>
+      </div>
+
       <div className="flex flex-col flex-nowrap py-1 px-2 gap-2">
         <div className="font-semibold">Logging Level</div>
         <select
