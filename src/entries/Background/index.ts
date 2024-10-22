@@ -4,10 +4,33 @@ import {
   onSendHeaders,
   handleNotarization,
 } from './handlers';
-import { deleteCacheByTabId } from './cache';
+import { deleteCacheByTabId, getCachedRequestByText } from './cache';
 import browser from 'webextension-polyfill';
 
 (async () => {
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+      id: 'find-request',
+      title: 'Find request',
+      contexts: ['selection'],
+    });
+  });
+
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId === 'find-request') {
+      if (!tab?.id || !info.selectionText) return;
+      const cachedRequest = getCachedRequestByText(tab.id, info.selectionText);
+      if (!cachedRequest || !cachedRequest.requestId) return;
+      chrome.storage.local.set(
+        { navigateTo: `/requests/${cachedRequest?.requestId}` },
+        () => {
+          // @ts-ignore
+          chrome.action.openPopup();
+        },
+      );
+    }
+  });
+
   browser.webRequest.onSendHeaders.addListener(
     onSendHeaders,
     {

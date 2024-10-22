@@ -119,23 +119,6 @@ export const handleNotarization = (
     const req = cache.get<RequestLog>(requestId);
     if (!req) return;
 
-    //console.log('🟢 check bookmark exist', url, method, type);
-    const bookmarkManager = new BookmarkManager();
-    const bookmark = await bookmarkManager.findBookmark(url, method, type);
-    if (!bookmark) return;
-    //console.log('🟢 bookmark exist', bookmark);
-
-    const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
-    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
-      const timeDiff = Date.now() - bookmark.notarizedAt;
-      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
-      if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
-        //console.log('🟢 timediff not ok');
-        return;
-      }
-    }
-    //console.log('🟢 timediff ok');
-
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
     const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
@@ -150,6 +133,48 @@ export const handleNotarization = (
     //TODO: for some reason, these needs to be override to work
     headers['Accept-Encoding'] = 'identity';
     headers['Connection'] = 'close';
+
+    if (req.type === 'xmlhttprequest' || req.type === 'main_frame') {
+      fetch(details.url, {
+        headers,
+        method: req.method,
+        body: req.requestBody,
+      })
+        .then((response) => {
+          if (response.status === details.statusCode) {
+            return response.text();
+          }
+          return null;
+        })
+        .then((body) => {
+          if (!body) return;
+          const existing = cache.get<RequestLog>(requestId);
+          if (!existing) return;
+          cache.set(requestId, {
+            ...existing,
+            responseBody: body,
+          });
+        })
+        .catch((error) => {
+          console.error(
+            'Error fetching response body from replied request:',
+            error,
+          );
+        });
+    }
+
+    const bookmarkManager = new BookmarkManager();
+    const bookmark = await bookmarkManager.findBookmark(url, method, type);
+    if (!bookmark) return;
+
+    const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
+    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
+      const timeDiff = Date.now() - bookmark.notarizedAt;
+      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
+      if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
+        return;
+      }
+    }
 
     const notaryUrl = await get(NOTARY_API_LS_KEY, NOTARY_API);
     const websocketProxyUrl = await get(PROXY_API_LS_KEY, NOTARY_PROXY);

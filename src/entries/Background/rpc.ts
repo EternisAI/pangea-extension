@@ -109,6 +109,7 @@ export type RequestLog = {
     [k: string]: string[];
   };
   responseHeaders?: browser.WebRequest.HttpHeaders;
+  responseBody?: string;
 };
 
 export type RequestHistory = {
