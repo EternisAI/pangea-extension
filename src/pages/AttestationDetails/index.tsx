@@ -24,13 +24,15 @@ export default function AttestationDetails() {
     console.log('AttributeAttestation', AttributeAttestation);
 
     if (!AttributeAttestation) return;
-    setAttributeAttestation(AttributeAttestation);
 
     const { attributes } = AttributeAttestation;
     if (attributes) setAttributes(attributes);
 
-    console.log('application_data', AttributeAttestation.application_data);
     const decodedAppData = decodeAppData(AttributeAttestation.application_data);
+
+    AttributeAttestation.application_data_decoded = decodedAppData;
+
+    setAttributeAttestation(AttributeAttestation);
     setSessionData(decodedAppData?.response_body || '');
   }, [request]);
 
@@ -112,11 +114,7 @@ export default function AttestationDetails() {
           </div>
 
           <div>
-            <AttributeAttestation
-              attrAttestation={attributeAttestation}
-              attributes={attributes}
-              sessionData={sessionData}
-            />
+            <AttributeAttestation attrAttestation={attributeAttestation} />
           </div>
         </div>
       </div>
@@ -126,10 +124,11 @@ export default function AttestationDetails() {
 
 export function AttributeAttestation(props: {
   attrAttestation: AttestationObject;
-  attributes: Attribute[];
-  sessionData: string;
 }) {
-  const { attrAttestation, attributes, sessionData } = props;
+  const { attrAttestation } = props;
+
+  const attributes = attrAttestation.attributes;
+  const sessionData = attrAttestation.application_data_decoded;
   return (
     <div className="text-[#9BA2AE] text-[14px] w-full max-w-3xl mx-auto  overflow-hidden relative">
       <div className="p-6 space-y-4">
@@ -150,6 +149,16 @@ export function AttributeAttestation(props: {
           </div>
 
           <div className="col-span-2">
+            <h3 className="font-semibold">Your identity commitment</h3>
+            <p className="break-all">
+              {
+                attrAttestation.application_data_decoded
+                  ?.semaphore_identity_commitment
+              }
+            </p>
+          </div>
+
+          <div className="col-span-2">
             <h3 className="font-semibold">Signature</h3>
             <p className="break-all text-xs">{attrAttestation.signature}</p>
           </div>
@@ -158,7 +167,7 @@ export function AttributeAttestation(props: {
           {attributes.length > 0 ? (
             <>
               <h3 className="font-semibold mb-2">Attributes</h3>
-              {props.attributes.map((attribute) => (
+              {attributes.map((attribute) => (
                 <div className="m-1 inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium ">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   {attribute.attribute_name}
@@ -171,10 +180,12 @@ export function AttributeAttestation(props: {
 
               {(() => {
                 try {
-                  const parsedData = JSON.parse(sessionData);
+                  const parsedData = JSON.parse(
+                    sessionData?.response_body || '',
+                  );
                   return <StylizedJSON data={parsedData} />;
                 } catch (error) {
-                  return <p>{sessionData}</p>;
+                  return <p>{sessionData?.response_body}</p>;
                 }
               })()}
             </>
