@@ -13,6 +13,7 @@ import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
 import { useBookmarks } from '../../reducers/bookmarks';
 import { AttestationObject, Attribute } from '@eternis/tlsn-js';
+import { CheckCircle } from 'lucide-react';
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -197,15 +198,22 @@ export function AttestationCard({
           )}
         </div>
 
+        {attributes?.slice(0, 2).map((attribute: Attribute) => (
+          <div className="flex items-center mb-2">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium truncate">
+              <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span className="truncate">{attribute.attribute_name}</span>
+            </div>
+          </div>
+        ))}
+
+        {attributes?.length > 2 && (
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium truncate w-40">
+            <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate"> + {attributes?.length - 2} more</span>
+          </div>
+        )}
         <div className="grid grid-cols-[80px,1fr] gap-2 mt-4">
-          {attributes?.map((attribute: Attribute) => (
-            <>
-              <div className="text-[#9BA2AE] text-sm leading-5 font-semibold">
-                {attribute.attribute_name}
-              </div>
-              <div className="text-[#4B5563] text-sm leading-5 truncate"></div>
-            </>
-          ))}
           {[
             {
               label: 'Time',
