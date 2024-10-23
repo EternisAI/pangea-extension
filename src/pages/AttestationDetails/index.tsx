@@ -159,7 +159,7 @@ export function AttributeAttestation(props: {
             <>
               <h3 className="font-semibold mb-2">Attributes</h3>
               {props.attributes.map((attribute) => (
-                <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium">
+                <div className="m-1 inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium ">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   {attribute.attribute_name}
                 </div>
