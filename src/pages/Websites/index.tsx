@@ -82,7 +82,6 @@ export default function Websites({
           <>
             {bookmarks
               .filter((bookmark) => {
-                console.log('bookmark', bookmark);
                 if (
                   websites.find(({ host }) => host === bookmark.host) &&
                   favorites.hasOwnProperty(bookmark.host ?? '')
