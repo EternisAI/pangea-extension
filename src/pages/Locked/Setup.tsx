@@ -18,6 +18,7 @@ export default function Setup() {
         data: {
           left: window.screenX + 24,
           top: window.screenY,
+          width: window.innerWidth - 48,
           username,
         },
       });

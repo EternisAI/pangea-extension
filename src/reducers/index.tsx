@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import requests from './requests';
 import history from './history';
 import plugins from './plugins';
-import identity from './identity2';
+import identity from './identity';
 
 const rootReducer = combineReducers({
   requests,

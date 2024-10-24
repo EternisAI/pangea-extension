@@ -1,4 +1,4 @@
-import { useIdentity } from '../../reducers/identity2';
+import { useIdentity } from '../../reducers/identity';
 import React, { useEffect } from 'react';
 import Setup from './Setup';
 import Lock from './Lock';

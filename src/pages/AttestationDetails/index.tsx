@@ -20,7 +20,7 @@ import { useIdentity } from '../../reducers/identity';
 import { VERIFIER_APP_URL } from '../../utils/constants';
 
 export default function AttestationDetails() {
-  const [identity] = useIdentity();
+  const { identity } = useIdentity();
   const params = useParams<{ host: string; requestId: string }>();
 
   const request = useRequestHistory(params.requestId);

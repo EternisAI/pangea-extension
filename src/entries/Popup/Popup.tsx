@@ -49,7 +49,7 @@ import {
   initIdentity,
   setIdentity,
   useIdentity,
-} from '../../reducers/identity2';
+} from '../../reducers/identity';
 
 const Popup = () => {
   const dispatch = useDispatch();
