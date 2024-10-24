@@ -525,3 +525,14 @@ export function urlToRegex(url: string): string {
 
   return regexPattern;
 }
+
+export const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  const binary = String.fromCharCode(...new Uint8Array(buffer));
+  return window.btoa(binary);
+};
+
+export const generateRandomArrayBuffer = (size: number) => {
+  const array = new Uint8Array(size);
+  window.crypto.getRandomValues(array);
+  return array;
+};

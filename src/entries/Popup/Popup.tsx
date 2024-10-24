@@ -44,14 +44,18 @@ import { getConnection } from '../Background/db';
 import NavHeader from '../../components/NavHeader';
 import Websites from '../../pages/Websites';
 import AttestationDetails from '../../pages/AttestationDetails';
-import { useIdentity } from '../../reducers/identity';
-import Lock from '../../pages/Lock';
+import Locked from '../../pages/Locked';
+import {
+  initIdentity,
+  setIdentity,
+  useIdentity,
+} from '../../reducers/identity2';
 
 const Popup = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { loading, locked } = useIdentity();
+  const { loading, identity } = useIdentity();
 
   useEffect(() => {
     (async () => {
@@ -73,12 +77,18 @@ const Popup = () => {
         type: BackgroundActiontype.get_prove_requests,
         data: tab?.id,
       });
+
+      dispatch(await initIdentity());
     })();
   }, []);
 
   useEffect(() => {
-    chrome.runtime.onMessage.addListener((request) => {
+    chrome.runtime.onMessage.addListener(async (request) => {
       switch (request.type) {
+        case BackgroundActiontype.unlock_extension: {
+          dispatch(await setIdentity(request.data.userId));
+          break;
+        }
         case BackgroundActiontype.push_action: {
           if (
             request.data.tabId === store.getState().requests.activeTab?.id ||
@@ -98,21 +108,12 @@ const Popup = () => {
     });
   }, []);
 
-  useEffect(() => {
-    console.log('locked', locked);
-    if (locked) {
-      navigate('/lock');
-    } else {
-      navigate('/home');
-    }
-  }, [locked]);
-
   if (loading) {
-    return (
-      <div className="flex flex-col w-full h-full overflow-hidden bg-[#F9FAFB]">
-        loading
-      </div>
-    );
+    return <></>;
+  }
+
+  if (!identity) {
+    return <Locked />;
   }
 
   return (
@@ -169,8 +170,6 @@ const Popup = () => {
           path="/install-plugin-approval"
           element={<InstallPluginApproval />}
         />
-
-        <Route path="/lock" element={<Lock />} />
 
         <Route path="*" element={<Navigate to="/home" />} />
       </Routes>

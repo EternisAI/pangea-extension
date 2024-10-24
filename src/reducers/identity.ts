@@ -3,6 +3,31 @@ import { sha256 } from '../utils/misc';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 
 export class IdentityManager {
+  async getExtensionState(): Promise<{
+    isSetupCompleted: boolean;
+    unlockCredential: string | null;
+  }> {
+    const storage = await chrome.storage.sync.get('extensionState');
+    console.log('storage', storage);
+    await chrome.storage.sync.set({
+      extensionState: {
+        isSetupCompleted: storage['isSetupCompleted'] ?? false,
+        unlockCredential: null,
+      },
+    });
+    return {
+      isSetupCompleted: storage['isSetupCompleted'] ?? false,
+      unlockCredential: storage['unlockCredential'] ?? null,
+    };
+  }
+
+  async setExtensionState(state: boolean): Promise<void> {
+    await chrome.storage.sync.set({
+      isSetupCompleted: state,
+      unlockCredential: null, // Reset unlock credential when changing extension state
+    });
+  }
+
   async getIdentity(): Promise<Identity> {
     const identityStorageId = await sha256('identity');
     try {
@@ -88,10 +113,9 @@ export const useIdentity = (): {
 
   useEffect(() => {
     (async () => {
-      // const identityManager = new IdentityManager();
-      // const identity = await identityManager.getIdentity();
-      // setIdentity(identity);
-      await getIdentity();
+      const identityManager = new IdentityManager();
+      const extensionState = await identityManager.getExtensionState();
+      // setIsSetupCompleted(extensionState.isSetupCompleted);
       setLoading(false);
     })();
   }, []);

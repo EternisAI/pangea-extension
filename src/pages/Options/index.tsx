@@ -47,7 +47,7 @@ import Search from '../../components/SvgIcons/Search';
 import { useNavigate } from 'react-router';
 import { useUniqueRequests, useDevMode } from '../../reducers/requests';
 // import { version } from '../../../package.json';
-import { useIdentity } from '../../reducers/identity';
+import { useIdentity } from '../../reducers/identity2';
 
 export default function Options(): ReactElement {
   const [notary, setNotary] = useState(NOTARY_API);
