@@ -50,6 +50,7 @@ var options = {
     contentScript: path.join(__dirname, "src", "entries", "Content", "index.ts"),
     content: path.join(__dirname, "src", "entries", "Content", "content.ts"),
     offscreen: path.join(__dirname, "src", "entries", "Offscreen", "index.tsx"),
+    auth: path.join(__dirname, "src", "entries", "Popup", "auth.ts"),
   },
   // chromeExtensionBoilerplate: {
   //   notHotReload: ["background", "contentScript", "devtools"],
@@ -236,6 +237,12 @@ var options = {
       template: path.join(__dirname, "src", "entries", "Popup", "index.html"),
       filename: "popup.html",
       chunks: ["popup"],
+      cache: false,
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, "src", "entries", "Popup", "auth.html"),
+      filename: "auth.html",
+      chunks: ["auth"],
       cache: false,
     }),
     new HtmlWebpackPlugin({

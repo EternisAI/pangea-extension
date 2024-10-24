@@ -142,6 +142,10 @@ export default function NavHeader({
     return 'Disabled';
   };
 
+  if (pathname === '/lock') {
+    return null;
+  }
+
   return (
     <div className="flex flex-nowrap flex-shrink-0 flex-row items-center relative gap-2 py-4 cursor-default bg-white w-full border-[#E4E6EA] border-b">
       {pathname !== '/home' ? (
