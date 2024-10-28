@@ -126,13 +126,28 @@ export const handleNotarization = (
     //console.log('🟢 bookmark exist', bookmark);
 
     const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
+
+    if (bookmark.notarizedAt) {
+      const notarizedDate = new Date(bookmark.notarizedAt);
+      console.log(
+        '🟢  notarizedDate, current date:',
+        notarizedDate,
+        new Date(Date.now()),
+      );
+    }
+
     if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
       const timeDiff = Date.now() - bookmark.notarizedAt;
-      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
+      console.log(
+        '🟢 timeDiff, NOTARIZATION_BUFFER_TIME',
+        timeDiff,
+        NOTARIZATION_BUFFER_TIME,
+      );
       if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
-        //console.log('🟢 timediff not ok');
+        console.log('🟢 timediff not ok');
         return;
       }
+      console.log('🟢 timediff ok');
     }
     //console.log('🟢 timediff ok');
 
