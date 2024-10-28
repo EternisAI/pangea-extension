@@ -112,24 +112,26 @@ export class BookmarkManager {
         //TEST: debug regex
 
         const regex = new RegExp(bookmark.urlRegex);
-        const result = regex.test(url) && bookmark.method === method;
+        const result =
+          regex.test(url) &&
+          ((method && bookmark.method === method) || !method);
 
-        if (
-          bookmark.id === '3' &&
-          url.includes('reddit') &&
-          method === bookmark.method &&
-          type === bookmark.type
-        ) {
-          console.log('request', url, method, type);
-          console.log(
-            'bookmark',
-            bookmark.urlRegex,
-            bookmark.method,
-            bookmark.type,
-          );
+        // if (
+        //   bookmark.id === '3' &&
+        //   url.includes('reddit') &&
+        //   method === bookmark.method &&
+        //   type === bookmark.type
+        // ) {
+        //   console.log('request', url, method, type);
+        //   console.log(
+        //     'bookmark',
+        //     bookmark.urlRegex,
+        //     bookmark.method,
+        //     bookmark.type,
+        //   );
 
-          console.log('result', result);
-        }
+        //   console.log('result', result);
+        // }
 
         return result;
       }) || null
