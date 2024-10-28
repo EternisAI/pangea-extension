@@ -193,7 +193,6 @@ export const handleNotarization = (
         type: BackgroundActiontype.prove_request_start,
         data: {
           cid: requestId,
-          type: req.type,
           url: req.url,
           method: req.method,
           headers: headers,
