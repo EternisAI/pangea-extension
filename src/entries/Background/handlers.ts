@@ -144,10 +144,10 @@ export const handleNotarization = (
         NOTARIZATION_BUFFER_TIME,
       );
       if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
-        console.log('🟢 timediff not ok');
+        console.log('🟢 buffer timediff not ok');
         return;
       }
-      console.log('🟢 timediff ok');
+      console.log('🟢 buffer timediff ok');
     }
     //console.log('🟢 timediff ok');
 
