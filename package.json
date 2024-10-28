@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
-    "@eternis/tlsn-js": "0.1.1",
+    "@eternis/tlsn-js": "0.1.2",
     "@extism/extism": "^1.0.2",
     "@fortawesome/fontawesome-free": "^6.4.2",
     "@sardinefish/x509": "^1.2.1",
