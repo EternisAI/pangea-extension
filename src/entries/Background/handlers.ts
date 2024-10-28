@@ -154,7 +154,7 @@ export const handleNotarization = (
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
     const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
-      (acc: { [k: string]: string }, h) => {
+      (acc: { [k: string]: string }, h: any) => {
         if (!h.name || !h.value) return acc;
         acc[h.name] = h.value;
         return acc;
