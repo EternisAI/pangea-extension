@@ -130,7 +130,7 @@ export const handleNotarization = (
     if (bookmark.notarizedAt) {
       const notarizedDate = new Date(bookmark.notarizedAt);
       console.log(
-        '🟢  notarizedDate, current date:',
+        '🟢  === \n  buffer notarizedDate, current date:',
         notarizedDate,
         new Date(Date.now()),
       );
@@ -139,7 +139,7 @@ export const handleNotarization = (
     if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
       const timeDiff = Date.now() - bookmark.notarizedAt;
       console.log(
-        '🟢 timeDiff, NOTARIZATION_BUFFER_TIME',
+        '🟢 buffer timeDiff, NOTARIZATION_BUFFER_TIME',
         timeDiff,
         NOTARIZATION_BUFFER_TIME,
       );
