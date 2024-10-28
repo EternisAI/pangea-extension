@@ -127,16 +127,24 @@ export const handleNotarization = (
 
     const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
 
+    //@TEST:
     if (bookmark.notarizedAt) {
       const notarizedDate = new Date(bookmark.notarizedAt);
       console.log(
-        '🟢  === \n  buffer notarizedDate, current date:',
+        '🟢  === \n  buffer notarizedDate',
         notarizedDate,
+        '\n current date:',
         new Date(Date.now()),
+        '\n lastNotaryRequest',
+        lastNotaryRequest,
+        '\n notarizedAt',
+        bookmark.notarizedAt,
+        '\n toNotarize',
+        bookmark.toNotarize,
       );
     }
 
-    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
+    if (bookmark.notarizedAt && !bookmark.toNotarize) {
       const timeDiff = Date.now() - bookmark.notarizedAt;
       console.log(
         '🟢 buffer timeDiff, NOTARIZATION_BUFFER_TIME',
@@ -149,7 +157,6 @@ export const handleNotarization = (
       }
       console.log('🟢 buffer timediff ok');
     }
-    //console.log('🟢 timediff ok');
 
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
@@ -186,7 +193,6 @@ export const handleNotarization = (
         type: BackgroundActiontype.prove_request_start,
         data: {
           cid: requestId,
-          type: req.type,
           url: req.url,
           method: req.method,
           headers: headers,

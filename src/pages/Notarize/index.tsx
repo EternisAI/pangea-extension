@@ -55,7 +55,6 @@ export default function Notarize(): ReactElement {
         body: req.requestBody,
         notaryUrl,
         websocketProxyUrl,
-        type: req.type,
       }),
     );
     navigate(`/history`);
