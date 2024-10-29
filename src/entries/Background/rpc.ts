@@ -48,6 +48,7 @@ const charwise = require('charwise');
 
 import { BookmarkManager } from '../../reducers/bookmarks';
 import { AttestationObject } from '@eternis/tlsn-js';
+import { Identity } from '@semaphore-protocol/identity';
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
@@ -92,6 +93,7 @@ export enum BackgroundActiontype {
   request_unlock_extension = 'request_unlock_extension',
   unlock_extension = 'unlock_extension',
   close_auth_popup = 'close_auth_popup',
+  identity_updated = 'identity_updated',
 }
 
 export enum AuthActiontype {
@@ -144,6 +146,8 @@ export type RequestHistory = {
   };
   type?: string;
 };
+
+let identitySecret: string | undefined = undefined;
 
 export const initRPC = () => {
   browser.runtime.onMessage.addListener(
@@ -209,6 +213,8 @@ export const initRPC = () => {
           return handleRequestCreateIdentity(request);
         case BackgroundActiontype.close_auth_popup:
           return handleCloseAuthPopup(request);
+        case BackgroundActiontype.identity_updated:
+          return handleIdentityUpdated(request);
         default:
           break;
       }
@@ -321,6 +327,7 @@ async function handleRetryProveReqest(
       ...req,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 
@@ -374,6 +381,7 @@ export async function handleProveRequestStart(
       body,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 
@@ -426,6 +434,7 @@ async function runPluginProver(request: BackgroundAction, now = Date.now()) {
       body,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 }
@@ -862,6 +871,7 @@ async function handleNotarizeRequest(request: BackgroundAction) {
               body,
               notaryUrl,
               websocketProxyUrl,
+              identitySecret,
             },
           });
         } catch (e) {
@@ -1165,5 +1175,11 @@ async function handleCloseAuthPopup(request: BackgroundAction) {
     }
   } catch (e) {
     console.error('error', e);
+  }
+}
+
+async function handleIdentityUpdated(request: BackgroundAction) {
+  if (request.data.identitySecret) {
+    identitySecret = request.data.identitySecret;
   }
 }

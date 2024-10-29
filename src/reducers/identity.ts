@@ -2,6 +2,7 @@ import { Identity } from '@semaphore-protocol/identity';
 import { useSelector } from 'react-redux';
 import { AppRootState } from './index';
 import deepEqual from 'fast-deep-equal';
+import { BackgroundActiontype } from '../entries/Background/rpc';
 
 enum ActionType {
   '/identity/setIdentity' = '/identity/setIdentity',
@@ -48,6 +49,13 @@ export const setIdentity = async (
   }
   console.log('identity', userId);
   const identity = new Identity(userId);
+  // send message to background to update identity
+  await chrome.runtime.sendMessage({
+    type: BackgroundActiontype.identity_updated,
+    data: {
+      identitySecret: userId,
+    },
+  });
   return {
     type: ActionType['/identity/setIdentity'],
     payload: {

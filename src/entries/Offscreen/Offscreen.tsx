@@ -14,6 +14,7 @@ import browser from 'webextension-polyfill';
 import { Proof } from '../../utils/types';
 import { Method } from '@eternis/tlsn-js/wasm/pkg';
 import { useIdentity } from '../../reducers/identity';
+import { Identity } from '@semaphore-protocol/identity';
 
 const { init, verify_attestation, Prover, NotarizedSession, TlsProof }: any =
   Comlink.wrap(new Worker(new URL('./worker.ts', import.meta.url)));
@@ -212,6 +213,7 @@ async function createProof(options: {
   };
   body?: any;
   id: string;
+  identitySecret: string;
 }): Promise<AttestationObject> {
   const {
     url,
@@ -221,9 +223,14 @@ async function createProof(options: {
     notaryUrl,
     websocketProxyUrl,
     id,
+    identitySecret,
   } = options;
 
-  const { identity } = useIdentity();
+  if (!identitySecret) {
+    throw new Error('IdentitySecret is required, extension is not unlocked');
+  }
+
+  const identity = new Identity(identitySecret);
 
   const hostname = urlify(url)?.hostname || '';
   const notary = NotaryServer.from(notaryUrl);
