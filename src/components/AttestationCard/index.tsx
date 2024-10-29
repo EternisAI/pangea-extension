@@ -11,9 +11,10 @@ import Error from '../SvgIcons/Error';
 import { BadgeCheck } from 'lucide-react';
 import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
-import { useBookmarks } from '../../reducers/bookmarks';
+import { useBookmarks, BookmarkManager } from '../../reducers/bookmarks';
 import { AttestationObject, Attribute } from '@eternis/tlsn-js';
 import { CheckCircle } from 'lucide-react';
+
 const charwise = require('charwise');
 
 function formatDate(requestId: string) {
@@ -73,8 +74,7 @@ export function AttestationCard({
   const date = formatAttestationDate(requestId, previousRequestId);
   const [bookmarks] = useBookmarks();
   const [devMode] = useDevMode();
-
-  console.log('bookmarks', bookmarks);
+  const bookmarkManager = new BookmarkManager();
 
   const { status } = request || {};
 
@@ -95,6 +95,24 @@ export function AttestationCard({
 
   const onDelete = useCallback(async () => {
     dispatch(deleteRequestHistory(requestId));
+
+    const bookmark = await bookmarkManager.findBookmark(
+      request?.url || '',
+      '',
+      '',
+    );
+
+    console.log('bookmark', bookmark);
+    if (bookmark) {
+      const updatedBookmark = {
+        ...bookmark,
+        notarizedAt: undefined,
+      };
+      await bookmarkManager.updateBookmark(updatedBookmark);
+    }
+
+    // const latestRequest = await getNotaryRequest(requestId);
+    // console.log('latestRequest', latestRequest);
   }, [requestId]);
 
   const onShowError = useCallback(async () => {
