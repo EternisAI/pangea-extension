@@ -39,6 +39,7 @@ export default function AttestationDetails() {
   const copyAttestation = () => {
     const text = JSON.stringify({
       ...request?.proof,
+      meta: undefined,
       application_data_decoded: undefined,
     });
     navigator.clipboard.writeText(text);
@@ -51,7 +52,11 @@ export default function AttestationDetails() {
   };
 
   const copyAndVerify = async () => {
-    const text = JSON.stringify(request?.proof);
+    const text = JSON.stringify({
+      ...request?.proof,
+      meta: undefined,
+      application_data_decoded: undefined,
+    });
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard');
     await new Promise((resolve) => setTimeout(resolve, 500));
