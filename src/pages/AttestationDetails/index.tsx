@@ -37,7 +37,10 @@ export default function AttestationDetails() {
   }, [request]);
 
   const copyAttestation = () => {
-    const text = JSON.stringify(request?.proof);
+    const text = JSON.stringify({
+      ...request?.proof,
+      application_data_decoded: undefined,
+    });
     navigator.clipboard.writeText(text);
     alert('Copied to clipboard');
   };
@@ -54,6 +57,7 @@ export default function AttestationDetails() {
     await new Promise((resolve) => setTimeout(resolve, 500));
     window.open(VERIFIER_APP_URL, '_blank');
   };
+
   if (!attributeAttestation) return <>ahi</>;
   return (
     <div className="flex flex-col gap-4 py-4 overflow-y-auto flex-1">
@@ -129,6 +133,12 @@ export function AttributeAttestation(props: {
 
   const attributes = attrAttestation.attributes;
   const sessionData = attrAttestation.application_data_decoded;
+
+  const getIdentityCommitment = (attributes: Attribute[]) => {
+    if (!attributes) return '';
+    else return attributes[0].identity_commitment;
+  };
+
   return (
     <div className="text-[#9BA2AE] text-[14px] w-full max-w-3xl mx-auto  overflow-hidden relative">
       <div className="p-6 space-y-4">
@@ -150,12 +160,7 @@ export function AttributeAttestation(props: {
 
           <div className="col-span-2">
             <h3 className="font-semibold">Your identity commitment</h3>
-            <p className="break-all">
-              {
-                attrAttestation.application_data_decoded
-                  ?.semaphore_identity_commitment
-              }
-            </p>
+            <p className="break-all">{getIdentityCommitment(attributes)}</p>
           </div>
 
           <div className="col-span-2">

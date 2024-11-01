@@ -237,28 +237,21 @@ async function createProof(options: {
 
   await prover.setup(await notary.sessionUrl(0, 0));
 
-  await prover.sendRequest(
-    websocketProxyUrl + `?token=${hostname}`,
-    {
-      url,
-      method,
-      headers,
-      body,
-    },
-    bigintToHex(identity.commitment),
-  );
+  await prover.sendRequest(websocketProxyUrl + `?token=${hostname}`, {
+    url,
+    method,
+    headers,
+    body,
+  });
 
-  const result = await prover.notarize();
+  const result = await prover.notarize(bigintToHex(identity.commitment));
 
   const proof: AttestationObject = {
-    version: '1.0',
     meta: {
       notaryUrl,
       websocketProxyUrl,
     },
-    signature: result.signature,
-    application_data: result.application_data,
-    attributes: result.attributes,
+    ...result,
   };
   console.log('proof', proof);
   return proof;
