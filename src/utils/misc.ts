@@ -441,7 +441,7 @@ export function extractPathFromUrl(url: string) {
 
 export function bigintToHex(bigint?: bigint) {
   if (!bigint) return '';
-  return `0x${bigint.toString(16)}`;
+  return `${bigint.toString(16)}`;
 }
 export async function getNotaryConfig() {
   const res = await fetch(DEFAULT_CONFIG_ENDPOINT, {
