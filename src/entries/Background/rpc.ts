@@ -45,8 +45,9 @@ import { minimatch } from 'minimatch';
 import { OffscreenActionTypes } from '../Offscreen/types';
 
 const charwise = require('charwise');
-import { AttrAttestation } from '../../utils/types';
+
 import { BookmarkManager } from '../../reducers/bookmarks';
+import { AttestationObject } from '@eternis/tlsn-js';
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
@@ -122,7 +123,7 @@ export type RequestHistory = {
   websocketProxyUrl: string;
   status: '' | 'pending' | 'success' | 'error';
   error?: any;
-  proof?: AttrAttestation;
+  proof?: AttestationObject;
   requestBody?: any;
   verification?: {
     sent: string;
@@ -314,20 +315,11 @@ export async function handleProveRequestStart(
   request: BackgroundAction,
   sendResponse: (data?: any) => void,
 ) {
-  const {
-    cid,
-    type,
-    url,
-    method,
-    headers,
-    body,
-    notaryUrl,
-    websocketProxyUrl,
-  } = request.data;
+  const { cid, url, method, headers, body, notaryUrl, websocketProxyUrl } =
+    request.data;
 
   const { id } = await addNotaryRequest(Date.now(), {
     cid,
-    type,
     url,
     method,
     headers,

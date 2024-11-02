@@ -5,13 +5,15 @@ import {
   NotaryServer,
   Prover as _Prover,
   RemoteAttestation,
+  AttestationObject,
 } from '@eternis/tlsn-js';
 
-import { urlify } from '../../utils/misc';
+import { urlify, bigintToHex } from '../../utils/misc';
 import { BackgroundActiontype } from '../Background/rpc';
 import browser from 'webextension-polyfill';
-import { Proof, AttrAttestation } from '../../utils/types';
+import { Proof } from '../../utils/types';
 import { Method } from '@eternis/tlsn-js/wasm/pkg';
+import { IdentityManager } from '../../reducers/identity';
 
 const { init, verify_attestation, Prover, NotarizedSession, TlsProof }: any =
   Comlink.wrap(new Worker(new URL('./worker.ts', import.meta.url)));
@@ -200,46 +202,6 @@ const Offscreen = () => {
 
 export default Offscreen;
 
-function subtractRanges(
-  ranges: { start: number; end: number },
-  negatives: { start: number; end: number }[],
-): { start: number; end: number }[] {
-  const returnVal: { start: number; end: number }[] = [ranges];
-
-  negatives
-    .sort((a, b) => (a.start < b.start ? -1 : 1))
-    .forEach(({ start, end }) => {
-      const last = returnVal.pop()!;
-
-      if (start < last.start || end > last.end) {
-        console.error('invalid ranges');
-        return;
-      }
-
-      if (start === last.start && end === last.end) {
-        return;
-      }
-
-      if (start === last.start && end < last.end) {
-        returnVal.push({ start: end, end: last.end });
-        return;
-      }
-
-      if (start > last.start && end < last.end) {
-        returnVal.push({ start: last.start, end: start });
-        returnVal.push({ start: end, end: last.end });
-        return;
-      }
-
-      if (start > last.start && end === last.end) {
-        returnVal.push({ start: last.start, end: start });
-        return;
-      }
-    });
-
-  return returnVal;
-}
-
 async function createProof(options: {
   url: string;
   notaryUrl: string;
@@ -249,36 +211,31 @@ async function createProof(options: {
     [name: string]: string;
   };
   body?: any;
-  maxSentData?: number;
-  maxRecvData?: number;
   id: string;
-  secretHeaders: string[];
-  secretResps: string[];
-}): Promise<AttrAttestation> {
+}): Promise<AttestationObject> {
   const {
     url,
     method = 'GET',
     headers = {},
     body,
-    maxSentData,
-    maxRecvData,
     notaryUrl,
     websocketProxyUrl,
     id,
-    secretHeaders,
-    secretResps,
   } = options;
+
+  const identityManager = new IdentityManager();
+  const identity = await identityManager.getIdentity();
 
   const hostname = urlify(url)?.hostname || '';
   const notary = NotaryServer.from(notaryUrl);
   const prover: _Prover = await new Prover({
     id,
     serverDns: hostname,
-    maxSentData,
-    maxRecvData,
+    maxSentData: 0,
+    maxRecvData: 0,
   });
 
-  await prover.setup(await notary.sessionUrl(maxSentData, maxRecvData));
+  await prover.setup(await notary.sessionUrl(0, 0));
 
   await prover.sendRequest(websocketProxyUrl + `?token=${hostname}`, {
     url,
@@ -287,19 +244,16 @@ async function createProof(options: {
     body,
   });
 
-  const result = await prover.notarize();
+  const result = await prover.notarize(bigintToHex(identity.commitment));
 
-  const proof: AttrAttestation = {
-    version: '1.0',
+  const proof: AttestationObject = {
     meta: {
       notaryUrl,
       websocketProxyUrl,
     },
-    signature: result.signature,
-    signedSession: result.signedSession,
-    applicationData: result.applicationData,
-    attestations: result.attestation,
+    ...result,
   };
+  console.log('proof', proof);
   return proof;
 }
 
