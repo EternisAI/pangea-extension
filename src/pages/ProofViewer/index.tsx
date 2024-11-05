@@ -10,9 +10,8 @@ import c from 'classnames';
 import { useRequestHistory } from '../../reducers/history';
 import Icon from '../../components/Icon';
 import { download } from '../../utils/misc';
-import { decodeTLSData } from '../../utils/misc';
-import { AttrAttestation } from '../../utils/types';
 import { CheckCircle } from 'lucide-react';
+import { AttestationObject } from '@eternis/tlsn-js';
 export default function ProofViewer(props?: { proof?: any }): ReactElement {
   const { requestId } = useParams<{ requestId: string }>();
   const request = useRequestHistory(requestId);
@@ -22,23 +21,9 @@ export default function ProofViewer(props?: { proof?: any }): ReactElement {
   const [attributes, setAttributes] = useState<string[]>([]);
   const [sessionData, setSessionData] = useState<string>('');
   useEffect(() => {
-    const AttributeAttestation = request?.proof as AttrAttestation;
+    const AttributeAttestation = request?.proof;
     if (!AttributeAttestation) return;
-    if (AttributeAttestation.attestations) {
-      const attestations = AttributeAttestation.attestations.split(';');
-      const attributes = [];
-      for (const attestation of attestations) {
-        const [key] = attestation.split(':');
-        if (key) attributes.push(key);
-      }
-
-      setAttributes(attributes);
-    } else {
-      const signedSessionDecoded = decodeTLSData(
-        AttributeAttestation.applicationData,
-      );
-      setSessionData(signedSessionDecoded.response);
-    }
+    else setAttributes(attributes);
   }, [request]);
 
   if (!request?.proof) return <></>;
@@ -104,7 +89,7 @@ function TabLabel(props: {
 }
 
 export function AttributeAttestation(props: {
-  attrAttestation: AttrAttestation;
+  attrAttestation: AttestationObject;
   attributes: string[];
   sessionData: string;
 }) {
@@ -151,7 +136,7 @@ export function AttributeAttestation(props: {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <h3 className="font-semibold">Notary url</h3>
-            <p className="break-all">{attrAttestation.meta.notaryUrl}</p>
+            <p className="break-all">{attrAttestation?.meta?.notaryUrl}</p>
           </div>
           <div>
             <h3 className="font-semibold">Version</h3>
@@ -160,7 +145,7 @@ export function AttributeAttestation(props: {
           <div>
             <h3 className="font-semibold">Websocket proxy url</h3>
             <p className="break-all">
-              websocket proxy: {attrAttestation.meta.websocketProxyUrl}
+              websocket proxy: {attrAttestation?.meta?.websocketProxyUrl}
             </p>
           </div>
 

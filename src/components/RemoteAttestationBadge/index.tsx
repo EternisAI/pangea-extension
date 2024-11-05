@@ -1,9 +1,9 @@
 import React, { ReactElement } from 'react';
 
-import { Lock } from 'lucide-react';
 import { useRemoteAttestation } from '../../reducers/remote-attestation';
 
 import { useExtensionEnabled } from '../../reducers/requests';
+import Lock from '../SvgIcons/Lock';
 
 export default function RemoteAttestationBadge(): ReactElement {
   const { remoteAttestation, loading, error, isValid } = useRemoteAttestation();
@@ -12,19 +12,16 @@ export default function RemoteAttestationBadge(): ReactElement {
   if (isValid === null) return <></>;
   return (
     <>
-      <div className="  items-center">
+      <div className="mt-5 items-center">
         <>
           {isValid ? (
             <div
-              className="inline-flex items-center px-3 py-2"
+              className="inline-flex items-center gap-2.5"
               role="status"
               aria-live="polite"
             >
-              <Lock
-                className="w-5 h-5 mr-2 text-green-500"
-                aria-hidden="true"
-              />
-              <span className="text-xs font-small text-green-500">
+              <Lock />
+              <span className="text-xs font-medium text-[#2EB022]">
                 Connection is secure
               </span>
             </div>

@@ -105,7 +105,7 @@ export const onBeforeRequest = (
 export const handleNotarization = (
   details: browser.WebRequest.OnCompletedDetailsType,
 ) => {
-  console.log('🟢 handleNotarization', details);
+  //console.log('🟢 handleNotarization', details);
   mutex.runExclusive(async () => {
     const isEnabled = await get(EXTENSION_ENABLED);
     if (!isEnabled) return;
@@ -126,20 +126,42 @@ export const handleNotarization = (
     //console.log('🟢 bookmark exist', bookmark);
 
     const lastNotaryRequest = await getLastNotaryRequest(bookmark.urlRegex);
-    if (lastNotaryRequest && bookmark.notarizedAt && !bookmark.toNotarize) {
+
+    //@TEST:
+    if (bookmark.notarizedAt) {
+      const notarizedDate = new Date(bookmark.notarizedAt);
+      console.log(
+        '🟢  === \n  buffer notarizedDate',
+        notarizedDate,
+        '\n current date:',
+        new Date(Date.now()),
+        '\n lastNotaryRequest',
+        lastNotaryRequest,
+        '\n notarizedAt',
+        bookmark.notarizedAt,
+        '\n toNotarize',
+        bookmark.toNotarize,
+      );
+    }
+
+    if (bookmark.notarizedAt && !bookmark.toNotarize) {
       const timeDiff = Date.now() - bookmark.notarizedAt;
-      console.log('🟢 timeDiff', timeDiff, bookmark.notarizedAt, Date.now());
+      console.log(
+        '🟢 buffer timeDiff, NOTARIZATION_BUFFER_TIME',
+        timeDiff,
+        NOTARIZATION_BUFFER_TIME,
+      );
       if (timeDiff < NOTARIZATION_BUFFER_TIME * 1000) {
-        //console.log('🟢 timediff not ok');
+        console.log('🟢 buffer timediff not ok');
         return;
       }
+      console.log('🟢 buffer timediff ok');
     }
-    //console.log('🟢 timediff ok');
 
     const hostname = urlify(req.url)?.hostname;
     if (!hostname) return;
     const headers = req.requestHeaders.reduce<{ [k: string]: string }>(
-      (acc: { [k: string]: string }, h) => {
+      (acc: { [k: string]: string }, h: any) => {
         if (!h.name || !h.value) return acc;
         acc[h.name] = h.value;
         return acc;
