@@ -112,7 +112,6 @@ export class BookmarkManager {
           regex.test(url) &&
           ((method && bookmark.method === method) || !method);
 
-        //@TEST: debug regex
         // if (
         //   bookmark.id === '3' &&
         //   url.includes('reddit') &&

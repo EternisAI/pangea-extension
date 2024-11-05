@@ -231,8 +231,8 @@ async function createProof(options: {
   const prover: _Prover = await new Prover({
     id,
     serverDns: hostname,
-    maxSentData: 0,
-    maxRecvData: 0,
+    maxSentData: 0, //legacy fields from tlsn, to remove
+    maxRecvData: 0, //legacy fields from tlsn, to remove
   });
 
   await prover.setup(await notary.sessionUrl(0, 0));

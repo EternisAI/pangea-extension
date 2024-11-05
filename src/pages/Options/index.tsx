@@ -280,26 +280,28 @@ function NormalOptions(props: {
         <div className="input border bg-slate-100">{version}</div>
       </div> */}
 
-      <InputField
-        label="Your public key"
-        placeholder="Public key"
-        value={bigintToHex(identity?.commitment)}
-        type="text"
-        readOnly
-        multiline
-        LabelIcon={
-          <div
-            onClick={() => {
-              chrome.tabs.create({
-                url: 'https://eternis.ai/',
-              });
-            }}
-            className="cursor-pointer"
-          >
-            <InfoCircle />
-          </div>
-        }
-      />
+      {identity && (
+        <InputField
+          label="Your public key"
+          placeholder="Public key"
+          value={bigintToHex(identity?.commitment)}
+          type="text"
+          readOnly
+          multiline
+          LabelIcon={
+            <div
+              onClick={() => {
+                chrome.tabs.create({
+                  url: 'https://eternis.ai/',
+                });
+              }}
+              className="cursor-pointer"
+            >
+              <InfoCircle />
+            </div>
+          }
+        />
+      )}
 
       <InputField
         label="Notary API"
