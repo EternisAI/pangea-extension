@@ -315,20 +315,11 @@ export async function handleProveRequestStart(
   request: BackgroundAction,
   sendResponse: (data?: any) => void,
 ) {
-  const {
-    cid,
-    type,
-    url,
-    method,
-    headers,
-    body,
-    notaryUrl,
-    websocketProxyUrl,
-  } = request.data;
+  const { cid, url, method, headers, body, notaryUrl, websocketProxyUrl } =
+    request.data;
 
   const { id } = await addNotaryRequest(Date.now(), {
     cid,
-    type,
     url,
     method,
     headers,

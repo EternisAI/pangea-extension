@@ -69,7 +69,6 @@ export default function RequestDetail(props: Props): ReactElement {
         body: req.requestBody,
         notaryUrl,
         websocketProxyUrl,
-        type: req.type,
       }),
     );
     navigate(`/history`);

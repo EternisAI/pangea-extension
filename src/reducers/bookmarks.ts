@@ -90,7 +90,6 @@ export class BookmarkManager {
     const bookmarks = config.PROVIDERS.map((provider) => ({
       ...provider,
       id: provider.id.toString(),
-      type: provider.transport,
     }));
 
     for (const bookmark of bookmarks) {
@@ -106,11 +105,8 @@ export class BookmarkManager {
   ): Promise<Bookmark | null> {
     const bookmarks = await this.getBookmarks();
 
-    //console.log('bookmarks', bookmarks);
     return (
       bookmarks.find((bookmark) => {
-        //TEST: debug regex
-
         const regex = new RegExp(bookmark.urlRegex);
         const result =
           regex.test(url) &&
