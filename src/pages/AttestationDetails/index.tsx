@@ -164,8 +164,10 @@ export function AttributeAttestation(props: {
           </div>
 
           <div className="col-span-2">
-            <h3 className="font-semibold">Your identity commitment</h3>
-            <p className="break-all">{attributes[0]}</p>
+            <h3 className="font-semibold">Identity commitment</h3>
+            <p className="break-all">
+              {Buffer.from(attributes[0]).toString('hex')}
+            </p>
           </div>
 
           <div className="col-span-2">
