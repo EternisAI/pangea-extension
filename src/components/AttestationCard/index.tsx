@@ -12,7 +12,7 @@ import { BadgeCheck } from 'lucide-react';
 import { useDevMode } from '../../reducers/requests';
 import { urlToRegex, extractHostFromUrl } from '../../utils/misc';
 import { useBookmarks, BookmarkManager } from '../../reducers/bookmarks';
-import { AttestationObject, Attribute } from '@eternis/tlsn-js';
+import { AttestationObject } from '@eternis/tlsn-js';
 import { CheckCircle } from 'lucide-react';
 
 const charwise = require('charwise');
@@ -216,11 +216,13 @@ export function AttestationCard({
           )}
         </div>
 
-        {attributes?.slice(0, 2).map((attribute: Attribute) => (
+        {attributes?.slice(0, 2).map((attribute: Uint8Array) => (
           <div className="flex items-center mb-2">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium truncate">
               <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
-              <span className="truncate">{attribute.attribute_name}</span>
+              <span className="truncate">
+                {Buffer.from(attribute).toString('utf8')}
+              </span>
             </div>
           </div>
         ))}

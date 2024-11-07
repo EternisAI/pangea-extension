@@ -246,6 +246,7 @@ async function createProof(options: {
 
   const result = await prover.notarize(bigintToHex(identity.commitment));
 
+  console.log('result', result);
   const proof: AttestationObject = {
     meta: {
       notaryUrl,

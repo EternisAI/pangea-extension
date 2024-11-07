@@ -5,7 +5,11 @@ import { useRequestHistory } from '../../reducers/history';
 import { CheckCircle } from 'lucide-react';
 import { useIdentity } from '../../reducers/identity';
 import { VERIFIER_APP_URL } from '../../utils/constants';
-import { AttestationObject, decodeAppData, Attribute } from '@eternis/tlsn-js';
+import {
+  AttestationObject,
+  decodeAppData,
+  DecodedData,
+} from '@eternis/tlsn-js';
 export default function AttestationDetails() {
   const [identity] = useIdentity();
   const params = useParams<{ host: string; requestId: string }>();
@@ -15,7 +19,7 @@ export default function AttestationDetails() {
 
   const [attributeAttestation, setAttributeAttestation] =
     useState<AttestationObject>();
-  const [attributes, setAttributes] = useState<Attribute[]>([]);
+  const [attributes, setAttributes] = useState<string[]>([]);
   const [sessionData, setSessionData] = useState<string>('');
 
   useEffect(() => {
@@ -26,14 +30,14 @@ export default function AttestationDetails() {
     if (!AttributeAttestation) return;
 
     const { attributes } = AttributeAttestation;
-    if (attributes) setAttributes(attributes);
+    const stringAttributes =
+      attributes?.map((attr) => Buffer.from(attr).toString()) || [];
+    if (attributes) setAttributes(stringAttributes);
 
-    const decodedAppData = decodeAppData(AttributeAttestation.application_data);
-
-    AttributeAttestation.application_data_decoded = decodedAppData;
+    //const decodedAppData = decodeAppData(AttributeAttestation.attributes[0]);
 
     setAttributeAttestation(AttributeAttestation);
-    setSessionData(decodedAppData?.response_body || '');
+    //setSessionData(decodedAppData?.response_body || '');
   }, [request]);
 
   const copyAttestation = () => {
@@ -133,16 +137,12 @@ export default function AttestationDetails() {
 
 export function AttributeAttestation(props: {
   attrAttestation: AttestationObject;
+  sessionData?: DecodedData;
 }) {
   const { attrAttestation } = props;
 
   const attributes = attrAttestation.attributes;
-  const sessionData = attrAttestation.application_data_decoded;
-
-  const getIdentityCommitment = (attributes: Attribute[]) => {
-    if (!attributes) return '';
-    else return attributes[0].identity_commitment;
-  };
+  const sessionData = '';
 
   return (
     <div className="text-[#9BA2AE] text-[14px] w-full max-w-3xl mx-auto  overflow-hidden relative">
@@ -165,7 +165,7 @@ export function AttributeAttestation(props: {
 
           <div className="col-span-2">
             <h3 className="font-semibold">Your identity commitment</h3>
-            <p className="break-all">{getIdentityCommitment(attributes)}</p>
+            <p className="break-all">{attributes[0]}</p>
           </div>
 
           <div className="col-span-2">
@@ -180,14 +180,17 @@ export function AttributeAttestation(props: {
               {attributes.map((attribute) => (
                 <div className="m-1 inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium ">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  {attribute.attribute_name}
+                  {Buffer.from(attribute).toString('utf8')}
                 </div>
               ))}
             </>
           ) : (
             <>
               <h3 className="font-semibold mb-2">Data</h3>
-
+              // TODO: Decode application data
+              {/*
+              
+               
               {(() => {
                 try {
                   const parsedData = JSON.parse(
@@ -197,7 +200,7 @@ export function AttributeAttestation(props: {
                 } catch (error) {
                   return <p>{sessionData?.response_body}</p>;
                 }
-              })()}
+              })()} */}
             </>
           )}
         </div>
