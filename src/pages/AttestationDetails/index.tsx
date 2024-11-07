@@ -50,10 +50,10 @@ export default function AttestationDetails() {
     alert('Copied to clipboard');
   };
 
-  const downloadAttestation = () => {
-    if (!request) return;
-    download(request.id, JSON.stringify(request.proof));
-  };
+  // const downloadAttestation = () => {
+  //   if (!request) return;
+  //   download(request.id, JSON.stringify(request.proof));
+  // };
 
   const copyAndVerify = async () => {
     const text = JSON.stringify({
@@ -77,13 +77,6 @@ export default function AttestationDetails() {
             className="flex-1 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
           >
             Copy
-          </div>
-
-          <div
-            onClick={downloadAttestation}
-            className="flex-1 ml-2 text-center cursor-pointer border border-[#E9EBF3] bg-white hover:bg-[#dfe0e5] text-[#092EEA] text-sm font-medium py-[10px] px-4 rounded-lg"
-          >
-            Download
           </div>
 
           <div
@@ -149,17 +142,15 @@ export function AttributeAttestation(props: {
       <div className="p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <h3 className="font-semibold">Notary</h3>
-            <p className="break-all">{attrAttestation?.meta?.notaryUrl}</p>
-          </div>
-          <div>
             <h3 className="font-semibold">Version</h3>
             <p>{attrAttestation.version}</p>
           </div>
-          <div>
-            <h3 className="font-semibold">Websocket proxy</h3>
+
+          <div className="col-span-2">
+            <h3 className="font-semibold">Notary Verifying Key</h3>
             <p className="break-all">
-              {attrAttestation?.meta?.websocketProxyUrl}
+              {attrAttestation.notary_public_key.slice(0, 30)}...
+              {attrAttestation.notary_public_key.slice(-30)}
             </p>
           </div>
 
