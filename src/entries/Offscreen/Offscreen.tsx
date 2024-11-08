@@ -13,7 +13,6 @@ import { BackgroundActiontype } from '../Background/rpc';
 import browser from 'webextension-polyfill';
 import { Proof } from '../../utils/types';
 import { Method } from '@eternis/tlsn-js/wasm/pkg';
-import { useIdentity } from '../../reducers/identity';
 import { Identity } from '@semaphore-protocol/identity';
 
 const { init, verify_attestation, Prover, NotarizedSession, TlsProof }: any =
@@ -237,8 +236,8 @@ async function createProof(options: {
   const prover: _Prover = await new Prover({
     id,
     serverDns: hostname,
-    maxSentData: 0,
-    maxRecvData: 0,
+    maxSentData: 0, //legacy fields from tlsn, to remove
+    maxRecvData: 0, //legacy fields from tlsn, to remove
   });
 
   await prover.setup(await notary.sessionUrl(0, 0));

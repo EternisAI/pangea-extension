@@ -23,11 +23,7 @@ export default function ProofViewer(props?: { proof?: any }): ReactElement {
   useEffect(() => {
     const AttributeAttestation = request?.proof;
     if (!AttributeAttestation) return;
-    if (AttributeAttestation) {
-      setAttributes(attributes);
-    } else {
-      //setSessionData(signedSessionDecoded.response);
-    }
+    else setAttributes(attributes);
   }, [request]);
 
   if (!request?.proof) return <></>;

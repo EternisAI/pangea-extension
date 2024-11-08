@@ -48,7 +48,7 @@ const charwise = require('charwise');
 
 import { BookmarkManager } from '../../reducers/bookmarks';
 import { AttestationObject } from '@eternis/tlsn-js';
-import { Identity } from '@semaphore-protocol/identity';
+
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
