@@ -42,13 +42,21 @@ export const setIdentity = async (
     };
   }
 
+  const identity = new Identity(userId);
+  const publicKey = [
+    identity.publicKey[0].toString(),
+    identity.publicKey[1].toString(),
+  ];
+
   const storage = await chrome.storage.sync.get('isSetupCompleted');
   const isSetupCompleted = storage?.isSetupCompleted ?? false;
   if (!isSetupCompleted) {
-    await chrome.storage.sync.set({ isSetupCompleted: true });
+    await chrome.storage.sync.set({
+      isSetupCompleted: true,
+      identityPublicKey: JSON.stringify(publicKey),
+    });
   }
-  console.log('identity', userId);
-  const identity = new Identity(userId);
+
   // send message to background to update identity
   await chrome.runtime.sendMessage({
     type: BackgroundActiontype.identity_updated,

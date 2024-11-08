@@ -1,8 +1,5 @@
 import { BackgroundActiontype, AuthActiontype } from '../Background/rpc';
-import {
-  arrayBufferToBase64,
-  generateRandomArrayBuffer,
-} from '../../utils/misc';
+import { arrayBufferToBase64, base64ToArrayBuffer } from '../../utils/misc';
 
 const webAuthnAuthenticate = async () => {
   try {
@@ -40,9 +37,9 @@ const webAuthnAuthenticate = async () => {
   }
 };
 
-const webAuthnRegister = async (username: string) => {
+const webAuthnRegister = async (username: string, userIdBase64: string) => {
   try {
-    const userId = generateRandomArrayBuffer(16);
+    const userId = base64ToArrayBuffer(userIdBase64);
 
     const publicKeyCredentialCreationOptions = {
       challenge: new Uint8Array(16), // not required as we are not going to verify the challenge
@@ -83,7 +80,6 @@ const webAuthnRegister = async (username: string) => {
       return;
     }
 
-    const userIdBase64 = arrayBufferToBase64(userId);
     chrome.runtime.sendMessage({
       type: BackgroundActiontype.close_auth_popup,
       data: {
@@ -106,6 +102,7 @@ chrome.runtime.onMessage.addListener((message) => {
   if (message.type === AuthActiontype.web_authn_authenticate) {
     webAuthnAuthenticate();
   } else if (message.type === AuthActiontype.web_authn_register) {
-    webAuthnRegister(message.data.username);
+    const { username, userId } = message.data;
+    webAuthnRegister(username, userId);
   }
 });

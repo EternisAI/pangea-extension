@@ -1124,13 +1124,18 @@ async function handleRequestUnlockExtension(request: BackgroundAction) {
 
 async function handleRequestCreateIdentity(request: BackgroundAction) {
   try {
-    const { left, top, width } = request.data;
+    const { left, top, width, username, userId } = request.data;
+    if (!username || !userId) {
+      throw new Error('username and userId are required');
+    }
+
     await createAuthPopup(left, top, width);
     setTimeout(() => {
       chrome.runtime.sendMessage({
         type: AuthActiontype.web_authn_register,
         data: {
-          username: request.data.username,
+          username,
+          userId,
         },
       });
     }, 300);
