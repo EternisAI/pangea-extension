@@ -48,6 +48,7 @@ const charwise = require('charwise');
 
 import { BookmarkManager } from '../../reducers/bookmarks';
 import { AttestationObject } from '@eternis/tlsn-js';
+
 export enum BackgroundActiontype {
   get_requests = 'get_requests',
   clear_requests = 'clear_requests',
@@ -88,6 +89,16 @@ export enum BackgroundActiontype {
   get_logging_level = 'get_logging_level',
   prepare_notarization = 'prepare_notarization',
   get_notarization_status = 'get_notarization_status',
+  request_create_identity = 'request_create_identity',
+  request_unlock_extension = 'request_unlock_extension',
+  unlock_extension = 'unlock_extension',
+  close_auth_popup = 'close_auth_popup',
+  identity_updated = 'identity_updated',
+}
+
+export enum AuthActiontype {
+  web_authn_authenticate = 'web_authn_authenticate',
+  web_authn_register = 'web_authn_register',
 }
 
 export type BackgroundAction = {
@@ -135,6 +146,8 @@ export type RequestHistory = {
   };
   type?: string;
 };
+
+let identitySecret: string | undefined = undefined;
 
 export const initRPC = () => {
   browser.runtime.onMessage.addListener(
@@ -194,6 +207,15 @@ export const initRPC = () => {
           return true;
         case BackgroundActiontype.get_notarization_status:
           return handleGetNotarizationStatus(request);
+        case BackgroundActiontype.request_unlock_extension:
+          return handleRequestUnlockExtension(request);
+        case BackgroundActiontype.request_create_identity:
+          return handleRequestCreateIdentity(request);
+        case BackgroundActiontype.close_auth_popup:
+          return handleCloseAuthPopup(request);
+        case BackgroundActiontype.identity_updated:
+          return handleIdentityUpdated(request);
+        default:
           break;
       }
     },
@@ -305,6 +327,7 @@ async function handleRetryProveReqest(
       ...req,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 
@@ -358,6 +381,7 @@ export async function handleProveRequestStart(
       body,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 
@@ -410,6 +434,7 @@ async function runPluginProver(request: BackgroundAction, now = Date.now()) {
       body,
       notaryUrl,
       websocketProxyUrl,
+      identitySecret,
     },
   });
 }
@@ -846,6 +871,7 @@ async function handleNotarizeRequest(request: BackgroundAction) {
               body,
               notaryUrl,
               websocketProxyUrl,
+              identitySecret,
             },
           });
         } catch (e) {
@@ -1065,4 +1091,100 @@ async function handleRunPluginCSRequest(request: BackgroundAction) {
   browser.windows.onRemoved.addListener(onPopUpClose);
 
   return defer.promise;
+}
+
+let authWindow: number | undefined = undefined;
+const createAuthPopup = async (left: number, top: number, width: number) => {
+  const popup = await chrome.windows.create({
+    url: 'auth.html',
+    type: 'panel',
+    width,
+    height: 1,
+    left,
+    top,
+    focused: true,
+    state: 'normal',
+  });
+  authWindow = popup.id;
+};
+
+async function handleRequestUnlockExtension(request: BackgroundAction) {
+  try {
+    const { left, top, width } = request.data;
+    await createAuthPopup(left, top, width);
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        type: AuthActiontype.web_authn_authenticate,
+      });
+    }, 300);
+  } catch (e) {
+    console.error('error', e);
+  }
+}
+
+async function handleRequestCreateIdentity(request: BackgroundAction) {
+  try {
+    const { left, top, width, username, userId } = request.data;
+    if (!username || !userId) {
+      throw new Error('username and userId are required');
+    }
+
+    await createAuthPopup(left, top, width);
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        type: AuthActiontype.web_authn_register,
+        data: {
+          username,
+          userId,
+        },
+      });
+    }, 300);
+  } catch (e) {
+    console.error('error', e);
+  }
+}
+
+async function handleCloseAuthPopup(request: BackgroundAction) {
+  try {
+    if (authWindow) {
+      // Remove all popup windows otherwise popup.html will keep stacking up
+      // await chrome.windows.remove(authWindow);
+      const windows = await chrome.windows.getAll();
+      await Promise.all(
+        windows.map(async (window) => {
+          if (window.type === 'popup') {
+            await chrome.windows.remove(window.id!);
+          }
+        }),
+      );
+
+      // Calling open popup forces the popup to remain open as focus is lost from previous remove calls
+      await chrome.windows.create({
+        url: 'popup.html',
+        type: 'popup',
+        width: 1,
+        height: 1,
+      });
+
+      // send message unlock extension
+      if (request && request.data && request.data.userId) {
+        chrome.runtime.sendMessage({
+          type: BackgroundActiontype.unlock_extension,
+          data: {
+            userId: request.data.userId,
+          },
+        });
+      }
+
+      authWindow = undefined;
+    }
+  } catch (e) {
+    console.error('error', e);
+  }
+}
+
+async function handleIdentityUpdated(request: BackgroundAction) {
+  if (request.data.identitySecret) {
+    identitySecret = request.data.identitySecret;
+  }
 }

@@ -1,58 +1,123 @@
 import { Identity } from '@semaphore-protocol/identity';
-import { sha256 } from '../utils/misc';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { AppRootState } from './index';
+import deepEqual from 'fast-deep-equal';
+import { BackgroundActiontype } from '../entries/Background/rpc';
 
-export class IdentityManager {
-  async getIdentity(): Promise<Identity> {
-    const identityStorageId = await sha256('identity');
-    try {
-      const storage = await chrome.storage.sync.get(identityStorageId);
-      const identity = storage[identityStorageId];
-      if (!identity) {
-        return this._createIdentity();
-      }
-      return new Identity(identity);
-    } catch (e) {
-      return this._createIdentity();
-    }
+enum ActionType {
+  '/identity/setIdentity' = '/identity/setIdentity',
+  '/identity/setLoading' = '/identity/setLoading',
+}
+
+type Action<payload> = {
+  type: ActionType;
+  payload?: payload;
+  error?: boolean;
+  meta?: any;
+};
+
+type State = {
+  loading: boolean;
+  identity: Identity | null;
+  isSetupCompleted: boolean;
+};
+
+const initState: State = {
+  loading: true,
+  identity: null,
+  isSetupCompleted: false,
+};
+
+export const setIdentity = async (
+  userId: string | null,
+): Promise<
+  Action<{ identity: Identity | null; isSetupCompleted?: boolean }>
+> => {
+  if (!userId) {
+    return {
+      type: ActionType['/identity/setIdentity'],
+      payload: {
+        identity: null,
+      },
+    };
   }
 
-  async _saveIdentity(identity: Identity): Promise<void> {
-    const identityStorageId = await sha256('identity');
-    try {
-      await chrome.storage.sync.set({
-        [identityStorageId]: identity.privateKey.toString(), // Only PRIVATE KEY is enough to reconstruct the identity
-      });
-    } catch (e) {
-      console.error('Error saving identity', e);
-    }
+  const identity = new Identity(userId);
+  const publicKey = [
+    identity.publicKey[0].toString(),
+    identity.publicKey[1].toString(),
+  ];
+
+  const storage = await chrome.storage.sync.get('isSetupCompleted');
+  const isSetupCompleted = storage?.isSetupCompleted ?? false;
+  if (!isSetupCompleted) {
+    await chrome.storage.sync.set({
+      isSetupCompleted: true,
+      identityPublicKey: JSON.stringify(publicKey),
+    });
   }
 
-  async _createIdentity(): Promise<Identity> {
-    console.log('creating identity');
-    const identity = new Identity();
-    await this._saveIdentity(identity);
-    return identity;
-  }
+  // send message to background to update identity
+  await chrome.runtime.sendMessage({
+    type: BackgroundActiontype.identity_updated,
+    data: {
+      identitySecret: userId,
+    },
+  });
+  return {
+    type: ActionType['/identity/setIdentity'],
+    payload: {
+      identity,
+      isSetupCompleted: true,
+    },
+  };
+};
 
-  async loadIdentity(privateKey: string): Promise<Identity> {
-    const identity = new Identity(privateKey);
-    await this._saveIdentity(identity);
-    return identity;
+export const initIdentity = async () => {
+  // await chrome.storage.sync.remove('isSetupCompleted');
+  const storage = await chrome.storage.sync.get('isSetupCompleted');
+  console.log('storage', storage);
+  const isSetupCompleted = storage?.isSetupCompleted ?? false;
+  return {
+    type: ActionType['/identity/setLoading'],
+    payload: {
+      loading: false,
+      isSetupCompleted,
+    },
+  };
+};
+
+export default function identity(
+  state = initState,
+  action: Action<any>,
+): State {
+  switch (action.type) {
+    case ActionType['/identity/setIdentity']:
+      return {
+        ...state,
+        ...action.payload,
+      };
+
+    case ActionType['/identity/setLoading']:
+      return {
+        ...state,
+        ...action.payload,
+      };
+    default:
+      return state;
   }
 }
 
-export const useIdentity = (): [
-  Identity | null,
-  Dispatch<SetStateAction<Identity | null>>,
-] => {
-  const [identity, setIdentity] = useState<Identity | null>(null);
-  useEffect(() => {
-    (async () => {
-      const identityManager = new IdentityManager();
-      const identity = await identityManager.getIdentity();
-      setIdentity(identity);
-    })();
-  }, []);
-  return [identity, setIdentity];
+export const useIdentity = (): {
+  loading: boolean;
+  identity: Identity | null;
+  isSetupCompleted: boolean;
+} => {
+  return useSelector((state: AppRootState) => {
+    return {
+      loading: state.identity.loading,
+      identity: state.identity.identity ?? null,
+      isSetupCompleted: state.identity.isSetupCompleted ?? false,
+    };
+  }, deepEqual);
 };

@@ -468,3 +468,24 @@ export function urlToRegex(url: string): string {
 
   return regexPattern;
 }
+
+export const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+  const binary = String.fromCharCode(...new Uint8Array(buffer));
+  return window.btoa(binary);
+};
+
+export const base64ToArrayBuffer = (base64: string) => {
+  const binary = window.atob(base64);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return buffer;
+};
+
+export const generateRandomArrayBuffer = (size: number) => {
+  const array = new Uint8Array(size);
+  window.crypto.getRandomValues(array);
+  return array;
+};
