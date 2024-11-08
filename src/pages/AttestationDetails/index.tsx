@@ -31,7 +31,7 @@ export default function AttestationDetails() {
 
     const { attributes } = AttributeAttestation;
     const stringAttributes =
-      attributes?.map((attr) => Buffer.from(attr).toString()) || [];
+      attributes?.map((attr) => Buffer.from(attr, 'hex').toString()) || [];
     if (attributes) setAttributes(stringAttributes);
 
     //const decodedAppData = decodeAppData(AttributeAttestation.attributes[0]);
@@ -157,7 +157,7 @@ export function AttributeAttestation(props: {
           <div className="col-span-2">
             <h3 className="font-semibold">Identity commitment</h3>
             <p className="break-all">
-              {Buffer.from(attributes[0]).toString('hex')}
+              {Buffer.from(attributes[0], 'hex').toString('utf8')}
             </p>
           </div>
 
@@ -173,7 +173,7 @@ export function AttributeAttestation(props: {
               {attributes.map((attribute) => (
                 <div className="m-1 inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium ">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  {Buffer.from(attribute).toString('utf8')}
+                  {Buffer.from(attribute, 'hex').toString('utf8')}
                 </div>
               ))}
             </>

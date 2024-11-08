@@ -216,12 +216,12 @@ export function AttestationCard({
           )}
         </div>
 
-        {attributes?.slice(0, 2).map((attribute: Uint8Array) => (
+        {attributes?.slice(0, 2).map((attribute: string) => (
           <div className="flex items-center mb-2">
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-green-700 text-green-100 text-sm font-medium truncate">
               <CheckCircle className="w-4 h-4 mr-2 flex-shrink-0" />
               <span className="truncate">
-                {Buffer.from(attribute).toString('utf8')}
+                {Buffer.from(attribute, 'hex').toString('utf8')}
               </span>
             </div>
           </div>
